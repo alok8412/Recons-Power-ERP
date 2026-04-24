@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EFP ERP</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+<!-- LOGIN / SIGNUP -->
+<div id="authBox" class="auth-container">
+  <h2 id="authTitle">Login</h2>
+
+  <input type="email" id="email" placeholder="Enter Email" />
+  <input type="password" id="password" placeholder="Enter Password" />
+
+  <button onclick="login()">Login</button>
+
+  <p onclick="toggleAuth()" class="toggle">
+    Don't have account? Sign up
+  </p>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;">
+
+<header class="container header">
+  <h1>ERP for Manufacturing Unit</h1>
+  <button onclick="logout()" class="logout">Logout</button>
+</header>
+
+<main class="container">
+  <section class="card">
+    <h2>Welcome</h2>
+    <p>You are successfully logged in 🎉</p>
+  </section>
+</main>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
