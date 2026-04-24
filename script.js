@@ -1,149 +1,95 @@
-let isLogin = true;
+const API = "PASTE_YOUR_API_URL";
 
-// AUTH
-function toggleAuth() {
-  isLogin = !isLogin;
-}
-
+// LOGIN
 function login() {
-  const email = document.getElementById("email").value;
-  const pass = document.getElementById("password").value;
+  let email = emailInput.value;
+  let password = passwordInput.value;
 
-  let users = JSON.parse(localStorage.getItem("users")) || {};
-
-  if (isLogin) {
-    if (users[email] === pass) {
-      localStorage.setItem("loggedInUser", email);
-      showApp();
-    } else {
-      alert("Invalid login");
-    }
-  } else {
-    users[email] = pass;
-    localStorage.setItem("users", JSON.stringify(users));
-    alert("Signup success");
-  }
+  fetch(`${API}?action=login&email=${email}&password=${password}`)
+    .then(r => r.json())
+    .then(d => {
+      if (d.status === "success") {
+        localStorage.setItem("user", email);
+        localStorage.setItem("role", d.role);
+        start();
+      } else alert("Invalid");
+    });
 }
 
-function showApp() {
-  document.getElementById("authBox").style.display = "none";
-  document.getElementById("app").style.display = "block";
-  document.getElementById("userEmail").innerText =
-    localStorage.getItem("loggedInUser");
-
-  loadData();
+function start() {
+  authBox.style.display = "none";
+  app.style.display = "block";
+  user.innerText = localStorage.getItem("user");
+  loadAll();
 }
 
-function logout() {
-  localStorage.removeItem("loggedInUser");
-  location.reload();
+// LOAD DATA
+function loadAll() {
+  load("Inventory", "invList");
+  load("Sales", "salesList");
+  load("Production", "prodList");
 }
 
-// PAGE SWITCH
+function load(sheet, element) {
+  fetch(`${API}?sheet=${sheet}`)
+    .then(r => r.json())
+    .then(data => {
+      let ul = document.getElementById(element);
+      ul.innerHTML = "";
+      data.slice(1).forEach(r => {
+        let li = document.createElement("li");
+        li.innerText = r.join(" | ");
+        ul.appendChild(li);
+      });
+    });
+}
+
+// ADD FUNCTIONS
+function addInventory() {
+  save("Inventory", [Date.now(), itemName.value, itemQty.value, new Date()]);
+}
+
+function addProduction() {
+  save("Production", [Date.now(), pname.value, "Pending", new Date()]);
+}
+
+function addSale() {
+  let total = qty.value * rate.value;
+  save("Sales", [Date.now(), cust.value, gst.value, prod.value, qty.value, rate.value, total, new Date()]);
+}
+
+function save(sheet, row) {
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({ sheet, row })
+  }).then(() => loadAll());
+}
+
+// GST INVOICE
+function invoice() {
+  let html = `
+    <h2>GST Invoice</h2>
+    <p>${cust.value}</p>
+    <p>${prod.value} - ₹${rate.value}</p>
+  `;
+  let w = window.open();
+  w.document.write(html);
+  w.print();
+}
+
+// NAV
 function loadPage(id) {
   document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
 }
 
-// INVENTORY
-function addItem() {
-  let name = document.getElementById("itemName").value;
-  let qty = document.getElementById("itemQty").value;
-
-  let items = JSON.parse(localStorage.getItem("inventory")) || [];
-  items.push({ name, qty });
-
-  localStorage.setItem("inventory", JSON.stringify(items));
-  loadData();
-}
-
-function loadInventory() {
-  let list = document.getElementById("inventoryList");
-  list.innerHTML = "";
-
-  let items = JSON.parse(localStorage.getItem("inventory")) || [];
-
-  items.forEach((item, i) => {
-    let li = document.createElement("li");
-    li.innerHTML = `${item.name} - ${item.qty}
-      <button onclick="deleteItem(${i})">X</button>`;
-    list.appendChild(li);
-  });
-
-  document.getElementById("invCount").innerText =
-    "Inventory: " + items.length;
-}
-
-function deleteItem(i) {
-  let items = JSON.parse(localStorage.getItem("inventory"));
-  items.splice(i, 1);
-  localStorage.setItem("inventory", JSON.stringify(items));
-  loadData();
-}
-
-// PRODUCTION
-function addProduction() {
-  let name = document.getElementById("prodName").value;
-
-  let list = JSON.parse(localStorage.getItem("production")) || [];
-  list.push(name);
-
-  localStorage.setItem("production", JSON.stringify(list));
-  loadData();
-}
-
-function loadProduction() {
-  let ul = document.getElementById("productionList");
-  ul.innerHTML = "";
-
-  let list = JSON.parse(localStorage.getItem("production")) || [];
-
-  list.forEach(item => {
-    let li = document.createElement("li");
-    li.innerText = item;
-    ul.appendChild(li);
-  });
-
-  document.getElementById("prodCount").innerText =
-    "Production: " + list.length;
-}
-
-// SALES
-function addSale() {
-  let name = document.getElementById("salesName").value;
-  let amt = document.getElementById("salesAmount").value;
-
-  let list = JSON.parse(localStorage.getItem("sales")) || [];
-  list.push({ name, amt });
-
-  localStorage.setItem("sales", JSON.stringify(list));
-  loadData();
-}
-
-function loadSales() {
-  let ul = document.getElementById("salesList");
-  ul.innerHTML = "";
-
-  let list = JSON.parse(localStorage.getItem("sales")) || [];
-
-  list.forEach(s => {
-    let li = document.createElement("li");
-    li.innerText = `${s.name} - ₹${s.amt}`;
-    ul.appendChild(li);
-  });
-
-  document.getElementById("salesCount").innerText =
-    "Sales: " + list.length;
-}
-
-// LOAD ALL
-function loadData() {
-  loadInventory();
-  loadProduction();
-  loadSales();
+// LOGOUT
+function logout() {
+  localStorage.clear();
+  location.reload();
 }
 
 // AUTO LOGIN
 window.onload = () => {
-  if (localStorage.getItem("loggedInUser")) showApp();
+  if (localStorage.getItem("user")) start();
 };
