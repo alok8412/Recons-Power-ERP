@@ -1,88 +1,73 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
   <title>EFP ERP</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<!-- AUTH -->
-<div id="authBox" class="auth-container">
-  <h2 id="authTitle">Login</h2>
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
+<!-- LOGIN -->
+<div id="authBox" class="auth">
+  <h2>ERP Login</h2>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
   <button onclick="login()">Login</button>
-  <p onclick="toggleAuth()" class="toggle">Sign up</p>
 </div>
 
 <!-- APP -->
 <div id="app" class="app">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <h2>EFP ERP</h2>
-    <ul>
-      <li onclick="loadPage('dashboard')">Dashboard</li>
-      <li onclick="loadPage('inventory')">Inventory</li>
-      <li onclick="loadPage('production')">Production</li>
-      <li onclick="loadPage('sales')">Sales</li>
-    </ul>
+    <li onclick="loadPage('dashboard')">Dashboard</li>
+    <li onclick="loadPage('inventory')">Inventory</li>
+    <li onclick="loadPage('sales')">Sales</li>
+    <li onclick="loadPage('production')">Production</li>
   </aside>
 
-  <!-- MAIN -->
   <div class="main">
-    <header class="topbar">
-      <span id="userEmail"></span>
+
+    <div class="topbar">
+      <span id="user"></span>
       <button onclick="logout()">Logout</button>
-    </header>
-
-    <div id="content">
-
-      <!-- DASHBOARD -->
-      <div id="dashboard" class="page">
-        <h2>Dashboard</h2>
-        <div class="cards">
-          <div class="card-box" id="invCount">Inventory: 0</div>
-          <div class="card-box" id="prodCount">Production: 0</div>
-          <div class="card-box" id="salesCount">Sales: 0</div>
-        </div>
-      </div>
-
-      <!-- INVENTORY -->
-      <div id="inventory" class="page hidden">
-        <h2>Inventory</h2>
-
-        <input id="itemName" placeholder="Item Name">
-        <input id="itemQty" type="number" placeholder="Quantity">
-        <button onclick="addItem()">Add Item</button>
-
-        <ul id="inventoryList"></ul>
-      </div>
-
-      <!-- PRODUCTION -->
-      <div id="production" class="page hidden">
-        <h2>Production</h2>
-
-        <input id="prodName" placeholder="Product Name">
-        <button onclick="addProduction()">Create Work Order</button>
-
-        <ul id="productionList"></ul>
-      </div>
-
-      <!-- SALES -->
-      <div id="sales" class="page hidden">
-        <h2>Sales</h2>
-
-        <input id="salesName" placeholder="Product">
-        <input id="salesAmount" type="number" placeholder="Amount">
-        <button onclick="addSale()">Add Sale</button>
-
-        <ul id="salesList"></ul>
-      </div>
-
     </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="page">
+      <h2>Dashboard</h2>
+      <div id="stats"></div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div id="inventory" class="page hidden">
+      <h2>Inventory</h2>
+      <input id="itemName" placeholder="Item">
+      <input id="itemQty" type="number">
+      <button onclick="addInventory()">Add</button>
+      <ul id="invList"></ul>
+    </div>
+
+    <!-- SALES -->
+    <div id="sales" class="page hidden">
+      <h2>Sales</h2>
+      <input id="cust" placeholder="Customer">
+      <input id="gst" placeholder="GST">
+      <input id="prod" placeholder="Product">
+      <input id="qty" type="number">
+      <input id="rate" type="number">
+      <button onclick="addSale()">Save</button>
+      <button onclick="invoice()">Invoice</button>
+      <ul id="salesList"></ul>
+    </div>
+
+    <!-- PRODUCTION -->
+    <div id="production" class="page hidden">
+      <h2>Production</h2>
+      <input id="pname" placeholder="Product">
+      <button onclick="addProduction()">Add</button>
+      <ul id="prodList"></ul>
+    </div>
+
   </div>
 </div>
 
