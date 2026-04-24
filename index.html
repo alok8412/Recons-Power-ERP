@@ -1,43 +1,89 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
   <title>EFP ERP</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- LOGIN / SIGNUP -->
+<!-- AUTH -->
 <div id="authBox" class="auth-container">
   <h2 id="authTitle">Login</h2>
-
-  <input type="email" id="email" placeholder="Enter Email" />
-  <input type="password" id="password" placeholder="Enter Password" />
-
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
   <button onclick="login()">Login</button>
-
-  <p onclick="toggleAuth()" class="toggle">
-    Don't have account? Sign up
-  </p>
+  <p onclick="toggleAuth()" class="toggle">Sign up</p>
 </div>
 
-<!-- MAIN APP -->
-<div id="app" style="display:none;">
+<!-- APP -->
+<div id="app" class="app">
 
-<header class="container header">
-  <h1>ERP for Manufacturing Unit</h1>
-  <button onclick="logout()" class="logout">Logout</button>
-</header>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2>EFP ERP</h2>
+    <ul>
+      <li onclick="loadPage('dashboard')">Dashboard</li>
+      <li onclick="loadPage('inventory')">Inventory</li>
+      <li onclick="loadPage('production')">Production</li>
+      <li onclick="loadPage('sales')">Sales</li>
+    </ul>
+  </aside>
 
-<main class="container">
-  <section class="card">
-    <h2>Welcome</h2>
-    <p>You are successfully logged in 🎉</p>
-  </section>
-</main>
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <span id="userEmail"></span>
+      <button onclick="logout()">Logout</button>
+    </header>
 
+    <div id="content">
+
+      <!-- DASHBOARD -->
+      <div id="dashboard" class="page">
+        <h2>Dashboard</h2>
+        <div class="cards">
+          <div class="card-box" id="invCount">Inventory: 0</div>
+          <div class="card-box" id="prodCount">Production: 0</div>
+          <div class="card-box" id="salesCount">Sales: 0</div>
+        </div>
+      </div>
+
+      <!-- INVENTORY -->
+      <div id="inventory" class="page hidden">
+        <h2>Inventory</h2>
+
+        <input id="itemName" placeholder="Item Name">
+        <input id="itemQty" type="number" placeholder="Quantity">
+        <button onclick="addItem()">Add Item</button>
+
+        <ul id="inventoryList"></ul>
+      </div>
+
+      <!-- PRODUCTION -->
+      <div id="production" class="page hidden">
+        <h2>Production</h2>
+
+        <input id="prodName" placeholder="Product Name">
+        <button onclick="addProduction()">Create Work Order</button>
+
+        <ul id="productionList"></ul>
+      </div>
+
+      <!-- SALES -->
+      <div id="sales" class="page hidden">
+        <h2>Sales</h2>
+
+        <input id="salesName" placeholder="Product">
+        <input id="salesAmount" type="number" placeholder="Amount">
+        <button onclick="addSale()">Add Sale</button>
+
+        <ul id="salesList"></ul>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <script src="script.js"></script>
