@@ -662,6 +662,38 @@ tbody tr:last-child td { border-bottom: none; }
   justify-content: flex-end;
   margin-bottom: 12px;
 }
+
+/* DROP ZONE */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bg);
+  margin-top: 8px;
+}
+.drop-zone:hover, .drop-zone.over {
+  border-color: var(--accent);
+  background: rgba(34,211,238,0.05);
+}
+.dz-icon { font-size: 32px; margin-bottom: 8px; }
+.dz-text { font-size: 14px; font-weight: 600; color: var(--text); }
+.dz-hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+.import-row-ok  { background: rgba(16,185,129,0.06); }
+.import-row-err { background: rgba(244,63,94,0.06); }
+
+.imp-hist-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.imp-hist-item:last-child { border-bottom: none; }
 </style>
 </head>
 <body>
@@ -669,7 +701,7 @@ tbody tr:last-child td { border-bottom: none; }
 <!-- ===== LOGIN ===== -->
 <div id="loginPage">
   <div class="login-box">
-    <div class="login-logo">⬡ Recons ERP Pro</div>
+    <div class="login-logo">⬡ ERP Pro</div>
     <p>Sign in to your workspace</p>
 
     <label>Username</label>
@@ -699,7 +731,7 @@ tbody tr:last-child td { border-bottom: none; }
     <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
       <div class="sidebar-logo">
-        ⬡ Recons ERP Pro
+        ⬡ ERP Pro
         <span>Business Suite v2.0</span>
       </div>
 
@@ -715,6 +747,9 @@ tbody tr:last-child td { border-bottom: none; }
 
       <div class="nav-section">Analytics</div>
       <button class="nav-item" onclick="show('reports')"><span class="icon">📈</span> Reports</button>
+
+      <div class="nav-section">Tools</div>
+      <button class="nav-item" onclick="show('bulkimport')"><span class="icon">📂</span> Bulk Import</button>
 
       <div class="sidebar-footer">
         <div class="user-pill">
@@ -1132,6 +1167,159 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
       </div>
 
+      <!-- BULK IMPORT -->
+      <div id="bulkimport" class="section">
+        <div class="page-header">
+          <h1>Bulk Import</h1>
+          <p>Upload CSV files to import Products, Customers, Sales or Expenses in one shot</p>
+        </div>
+
+        <div class="card" style="border-color:var(--accent);background:rgba(34,211,238,0.04)">
+          <div class="card-title">📋 How It Works</div>
+          <div style="font-size:13px;color:var(--muted);line-height:2">
+            1. Choose an import type &nbsp;→&nbsp; 2. Download the sample template &nbsp;→&nbsp;
+            3. Fill it in (Excel / Sheets / Notepad) &nbsp;→&nbsp; 4. Upload &amp; Preview &nbsp;→&nbsp; 5. Confirm Import
+          </div>
+        </div>
+
+        <div class="tabs" style="margin-bottom:24px">
+          <button class="tab active" onclick="switchImportTab('imp_products',this)">📦 Products</button>
+          <button class="tab" onclick="switchImportTab('imp_customers',this)">👥 Customers</button>
+          <button class="tab" onclick="switchImportTab('imp_sales',this)">🛒 Sales</button>
+          <button class="tab" onclick="switchImportTab('imp_expenses',this)">📤 Expenses</button>
+        </div>
+
+        <!-- PRODUCTS -->
+        <div id="imp_products">
+          <div class="two-col">
+            <div class="card">
+              <div class="card-title">1 · Download Template</div>
+              <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Required columns: <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:12px">name, category, qty, price, low_stock</code></p>
+              <button class="btn btn-outline" onclick="downloadTemplate('products')">⬇ Products Template</button>
+            </div>
+            <div class="card">
+              <div class="card-title">2 · Upload CSV</div>
+              <div class="drop-zone" id="dz_products" onclick="document.getElementById('csv_products').click()" ondragover="dzOver(event,'dz_products')" ondragleave="dzLeave('dz_products')" ondrop="dzDrop(event,'products')">
+                <div class="dz-icon">📁</div>
+                <div class="dz-text">Click or drag &amp; drop CSV here</div>
+                <div class="dz-hint">.csv files only</div>
+              </div>
+              <input type="file" id="csv_products" accept=".csv" style="display:none" onchange="handleCSV(event,'products')">
+            </div>
+          </div>
+          <div class="card" id="preview_products" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <div class="card-title" style="margin:0">3 · Preview &amp; Confirm</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-outline btn-sm" onclick="clearImport('products')">✕ Clear</button>
+                <button class="btn btn-success" onclick="confirmImport('products')">✅ Import All</button>
+              </div>
+            </div>
+            <div id="preview_status_products" style="margin-bottom:10px;font-size:13px"></div>
+            <div class="table-wrap"><table id="preview_table_products"></table></div>
+          </div>
+        </div>
+
+        <!-- CUSTOMERS -->
+        <div id="imp_customers" style="display:none">
+          <div class="two-col">
+            <div class="card">
+              <div class="card-title">1 · Download Template</div>
+              <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Required columns: <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:12px">name, phone, email, type</code></p>
+              <button class="btn btn-outline" onclick="downloadTemplate('customers')">⬇ Customers Template</button>
+            </div>
+            <div class="card">
+              <div class="card-title">2 · Upload CSV</div>
+              <div class="drop-zone" id="dz_customers" onclick="document.getElementById('csv_customers').click()" ondragover="dzOver(event,'dz_customers')" ondragleave="dzLeave('dz_customers')" ondrop="dzDrop(event,'customers')">
+                <div class="dz-icon">📁</div>
+                <div class="dz-text">Click or drag &amp; drop CSV here</div>
+                <div class="dz-hint">.csv files only</div>
+              </div>
+              <input type="file" id="csv_customers" accept=".csv" style="display:none" onchange="handleCSV(event,'customers')">
+            </div>
+          </div>
+          <div class="card" id="preview_customers" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <div class="card-title" style="margin:0">3 · Preview &amp; Confirm</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-outline btn-sm" onclick="clearImport('customers')">✕ Clear</button>
+                <button class="btn btn-success" onclick="confirmImport('customers')">✅ Import All</button>
+              </div>
+            </div>
+            <div id="preview_status_customers" style="margin-bottom:10px;font-size:13px"></div>
+            <div class="table-wrap"><table id="preview_table_customers"></table></div>
+          </div>
+        </div>
+
+        <!-- SALES -->
+        <div id="imp_sales" style="display:none">
+          <div class="two-col">
+            <div class="card">
+              <div class="card-title">1 · Download Template</div>
+              <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Required columns: <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:12px">product_name, customer, qty, date</code></p>
+              <button class="btn btn-outline" onclick="downloadTemplate('sales')">⬇ Sales Template</button>
+            </div>
+            <div class="card">
+              <div class="card-title">2 · Upload CSV</div>
+              <div class="drop-zone" id="dz_sales" onclick="document.getElementById('csv_sales').click()" ondragover="dzOver(event,'dz_sales')" ondragleave="dzLeave('dz_sales')" ondrop="dzDrop(event,'sales')">
+                <div class="dz-icon">📁</div>
+                <div class="dz-text">Click or drag &amp; drop CSV here</div>
+                <div class="dz-hint">.csv files only</div>
+              </div>
+              <input type="file" id="csv_sales" accept=".csv" style="display:none" onchange="handleCSV(event,'sales')">
+            </div>
+          </div>
+          <div class="card" id="preview_sales" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <div class="card-title" style="margin:0">3 · Preview &amp; Confirm</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-outline btn-sm" onclick="clearImport('sales')">✕ Clear</button>
+                <button class="btn btn-success" onclick="confirmImport('sales')">✅ Import All</button>
+              </div>
+            </div>
+            <div id="preview_status_sales" style="margin-bottom:10px;font-size:13px"></div>
+            <div class="table-wrap"><table id="preview_table_sales"></table></div>
+          </div>
+        </div>
+
+        <!-- EXPENSES -->
+        <div id="imp_expenses" style="display:none">
+          <div class="two-col">
+            <div class="card">
+              <div class="card-title">1 · Download Template</div>
+              <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Required columns: <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:12px">description, category, amount, date</code></p>
+              <button class="btn btn-outline" onclick="downloadTemplate('expenses')">⬇ Expenses Template</button>
+            </div>
+            <div class="card">
+              <div class="card-title">2 · Upload CSV</div>
+              <div class="drop-zone" id="dz_expenses" onclick="document.getElementById('csv_expenses').click()" ondragover="dzOver(event,'dz_expenses')" ondragleave="dzLeave('dz_expenses')" ondrop="dzDrop(event,'expenses')">
+                <div class="dz-icon">📁</div>
+                <div class="dz-text">Click or drag &amp; drop CSV here</div>
+                <div class="dz-hint">.csv files only</div>
+              </div>
+              <input type="file" id="csv_expenses" accept=".csv" style="display:none" onchange="handleCSV(event,'expenses')">
+            </div>
+          </div>
+          <div class="card" id="preview_expenses" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <div class="card-title" style="margin:0">3 · Preview &amp; Confirm</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-outline btn-sm" onclick="clearImport('expenses')">✕ Clear</button>
+                <button class="btn btn-success" onclick="confirmImport('expenses')">✅ Import All</button>
+              </div>
+            </div>
+            <div id="preview_status_expenses" style="margin-bottom:10px;font-size:13px"></div>
+            <div class="table-wrap"><table id="preview_table_expenses"></table></div>
+          </div>
+        </div>
+
+        <!-- IMPORT HISTORY -->
+        <div class="card" style="margin-top:8px">
+          <div class="card-title">Import History (this session)</div>
+          <div id="importHistory"><div class="empty-state"><div class="e-icon">📂</div><p>No imports yet</p></div></div>
+        </div>
+      </div>
+
     </div><!-- /main -->
   </div><!-- /layout -->
 </div><!-- /app -->
@@ -1472,7 +1660,7 @@ function printInvoiceModal() {
     th{background:#f5f5f5}
     .total{font-size:20px;font-weight:bold;color:#0a6}</style>
     </head><body>
-    <h2>🧾 Tax Invoice — Recons ERP Pro</h2>
+    <h2>🧾 Tax Invoice — ERP Pro</h2>
     <p>Customer: <strong>${s.customer}</strong></p>
     <p>Date: ${s.date}</p>
     <table>
@@ -1814,7 +2002,7 @@ function exportSalesPDF() {
     tr:nth-child(even){background:#f8fafc}
     .total{font-size:18px;font-weight:bold;margin-top:20px;text-align:right;color:#0a6}
     </style></head><body>
-    <h1>📊 Sales Report — Recons ERP Pro</h1>
+    <h1>📊 Sales Report — ERP Pro</h1>
     <p>Generated: ${new Date().toLocaleString()}</p>
     <table>
       <thead><tr><th>Product</th><th>Customer</th><th>Qty</th><th>Subtotal</th><th>GST</th><th>Grand Total</th><th>Date</th></tr></thead>
@@ -1830,6 +2018,235 @@ function exportSalesPDF() {
     <script>window.print();<\/script>
     </body></html>`);
   w.document.close();
+}
+
+// ===== BULK IMPORT =====
+let importPreviews = {}; // type -> parsed rows
+let importHistory  = [];
+
+const TEMPLATES = {
+  products:  { headers: ['name','category','qty','price','low_stock'], sample: [['Widget A','Electronics','50','299','10'],['T-Shirt Blue','Clothing','120','499','20']] },
+  customers: { headers: ['name','phone','email','type'],               sample: [['Rahul Sharma','9876543210','rahul@email.com','Regular'],['Priya Singh','9123456789','priya@mail.com','VIP']] },
+  sales:     { headers: ['product_name','customer','qty','date'],      sample: [['Widget A','Rahul Sharma','2','2025-04-10'],['T-Shirt Blue','Walk-in','5','2025-04-11']] },
+  expenses:  { headers: ['description','category','amount','date'],    sample: [['Office Rent','Rent','15000','2025-04-01'],['Staff Salary','Salaries','30000','2025-04-01']] }
+};
+
+function switchImportTab(tabId, btn) {
+  ['imp_products','imp_customers','imp_sales','imp_expenses'].forEach(t => {
+    const el = document.getElementById(t);
+    if (el) el.style.display = 'none';
+  });
+  document.getElementById(tabId).style.display = 'block';
+  document.querySelectorAll('#bulkimport .tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function downloadTemplate(type) {
+  const t = TEMPLATES[type];
+  const csv = [t.headers.join(','), ...t.sample.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `template_${type}.csv`;
+  a.click();
+  showToast(`⬇ template_${type}.csv downloaded`);
+}
+
+// Drag & drop helpers
+function dzOver(e, id) { e.preventDefault(); document.getElementById(id).classList.add('over'); }
+function dzLeave(id)   { document.getElementById(id).classList.remove('over'); }
+function dzDrop(e, type) {
+  e.preventDefault();
+  const id = 'dz_' + type;
+  document.getElementById(id).classList.remove('over');
+  const file = e.dataTransfer.files[0];
+  if (file) processCSVFile(file, type);
+}
+
+function handleCSV(e, type) {
+  const file = e.target.files[0];
+  if (file) processCSVFile(file, type);
+}
+
+function processCSVFile(file, type) {
+  if (!file.name.endsWith('.csv')) { showToast('⚠️ Only .csv files are supported', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    parseAndPreview(text, type);
+  };
+  reader.readAsText(file);
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) return { headers: [], rows: [] };
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
+  const rows = lines.slice(1).map(line => {
+    const vals = [];
+    let cur = '', inQ = false;
+    for (let c of line) {
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    vals.push(cur.trim());
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (vals[i] || '').replace(/^"|"$/g,'').trim());
+    return obj;
+  });
+  return { headers, rows };
+}
+
+function parseAndPreview(text, type) {
+  const { headers, rows } = parseCSV(text);
+  const required = TEMPLATES[type].headers;
+
+  // Validate headers
+  const missing = required.filter(r => !headers.includes(r));
+  if (missing.length) {
+    showToast(`⚠️ Missing columns: ${missing.join(', ')}`, 'error');
+    return;
+  }
+
+  // Validate rows
+  const validated = rows.map((row, i) => {
+    const errors = [];
+    if (type === 'products') {
+      if (!row.name) errors.push('name required');
+      if (isNaN(Number(row.qty)) || Number(row.qty) < 0) errors.push('invalid qty');
+      if (isNaN(Number(row.price)) || Number(row.price) <= 0) errors.push('invalid price');
+    }
+    if (type === 'customers') {
+      if (!row.name) errors.push('name required');
+      if (row.phone && !/^\d{10}$/.test(row.phone)) errors.push('phone must be 10 digits');
+    }
+    if (type === 'sales') {
+      if (!row.product_name) errors.push('product_name required');
+      if (isNaN(Number(row.qty)) || Number(row.qty) <= 0) errors.push('invalid qty');
+    }
+    if (type === 'expenses') {
+      if (!row.description) errors.push('description required');
+      if (isNaN(Number(row.amount)) || Number(row.amount) <= 0) errors.push('invalid amount');
+    }
+    return { ...row, _row: i+2, _errors: errors, _ok: errors.length === 0 };
+  });
+
+  importPreviews[type] = validated;
+
+  const ok  = validated.filter(r => r._ok).length;
+  const err = validated.filter(r => !r._ok).length;
+
+  // Build preview table
+  const tbl = document.getElementById('preview_table_' + type);
+  const dispHeaders = required;
+  let html = `<thead><tr>${dispHeaders.map(h=>`<th>${h}</th>`).join('')}<th>Row</th><th>Status</th></tr></thead><tbody>`;
+  html += validated.map(row => {
+    const cls = row._ok ? 'import-row-ok' : 'import-row-err';
+    const status = row._ok
+      ? `<span class="badge badge-green">✓ OK</span>`
+      : `<span class="badge badge-red" title="${row._errors.join('; ')}">✕ ${row._errors[0]}</span>`;
+    return `<tr class="${cls}">${dispHeaders.map(h=>`<td>${row[h]||'—'}</td>`).join('')}<td>${row._row}</td><td>${status}</td></tr>`;
+  }).join('');
+  html += '</tbody>';
+  tbl.innerHTML = html;
+
+  // Status summary
+  document.getElementById('preview_status_' + type).innerHTML =
+    `<span class="badge badge-green">✓ ${ok} valid rows</span>&nbsp;` +
+    (err ? `<span class="badge badge-red">✕ ${err} rows with errors (will be skipped)</span>` : '');
+
+  document.getElementById('preview_' + type).style.display = 'block';
+  document.getElementById('preview_' + type).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function clearImport(type) {
+  delete importPreviews[type];
+  document.getElementById('preview_' + type).style.display = 'none';
+  document.getElementById('csv_' + type).value = '';
+}
+
+function confirmImport(type) {
+  const rows = (importPreviews[type] || []).filter(r => r._ok);
+  if (!rows.length) { showToast('⚠️ No valid rows to import', 'error'); return; }
+
+  let imported = 0;
+
+  if (type === 'products') {
+    rows.forEach(r => {
+      products.push({
+        name: r.name,
+        cat: r.category || 'Other',
+        qty: Number(r.qty),
+        price: Number(r.price),
+        low: Number(r.low_stock) || 5,
+        added: new Date().toLocaleDateString()
+      });
+      imported++;
+    });
+  }
+
+  if (type === 'customers') {
+    rows.forEach(r => {
+      customers.push({
+        name: r.name,
+        phone: r.phone || '',
+        email: r.email || '',
+        type: r.type || 'Regular',
+        joined: new Date().toLocaleDateString()
+      });
+      imported++;
+    });
+  }
+
+  if (type === 'sales') {
+    rows.forEach(r => {
+      const p = products.find(x => x.name.toLowerCase() === r.product_name.toLowerCase());
+      if (!p) return; // skip if product not found
+      const qty = Number(r.qty);
+      if (p.qty < qty) return; // skip if insufficient stock
+      p.qty -= qty;
+      const subtotal = +(qty * p.price).toFixed(2);
+      const gst      = +(subtotal * 0.18).toFixed(2);
+      const grand    = +(subtotal + gst).toFixed(2);
+      sales.push({ name: p.name, customer: r.customer || 'Walk-in', qty, subtotal, gst, grand, date: r.date || new Date().toLocaleString() });
+      imported++;
+    });
+  }
+
+  if (type === 'expenses') {
+    rows.forEach(r => {
+      expenses.push({
+        desc: r.description,
+        cat: r.category || 'Other',
+        amount: Number(r.amount),
+        date: r.date || new Date().toLocaleDateString()
+      });
+      imported++;
+    });
+  }
+
+  // Log to history
+  importHistory.unshift({ type, count: imported, total: rows.length + (importPreviews[type].filter(r=>!r._ok).length), time: new Date().toLocaleString() });
+  renderImportHistory();
+
+  save();
+  clearImport(type);
+  showToast(`✅ Imported ${imported} ${type} successfully!`);
+}
+
+function renderImportHistory() {
+  const el = document.getElementById('importHistory');
+  if (!importHistory.length) {
+    el.innerHTML = `<div class="empty-state"><div class="e-icon">📂</div><p>No imports yet</p></div>`;
+    return;
+  }
+  const icons = { products:'📦', customers:'👥', sales:'🛒', expenses:'📤' };
+  el.innerHTML = importHistory.map(h => `
+    <div class="imp-hist-item">
+      <div>${icons[h.type]||'📂'} <strong>${h.count}</strong> ${h.type} imported <span style="color:var(--muted)">(${h.total} rows parsed)</span></div>
+      <div style="color:var(--muted);font-size:12px">${h.time}</div>
+    </div>`).join('');
 }
 
 // ===== LOAD ALL =====
