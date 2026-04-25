@@ -1,76 +1,1853 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>EFP ERP</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>ERP SaaS Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0a0f1e;
+  --surface: #111827;
+  --surface2: #1a2236;
+  --border: #1e2d45;
+  --accent: #22d3ee;
+  --accent2: #f59e0b;
+  --accent3: #a78bfa;
+  --danger: #f43f5e;
+  --success: #10b981;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== LOGIN ===== */
+#loginPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 30% 50%, #0e2a4a 0%, var(--bg) 60%);
+}
+
+.login-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 48px 40px;
+  width: 360px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+  animation: fadeUp 0.5s ease;
+}
+
+.login-logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 22px;
+  color: var(--accent);
+  margin-bottom: 8px;
+  letter-spacing: -1px;
+}
+
+.login-box p {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+.login-box label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+  margin-top: 16px;
+}
+
+.login-box input, .login-box select {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.2s;
+}
+
+.login-box input:focus, .login-box select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.login-box select option { background: var(--surface); }
+
+.role-pills {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.role-pill {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.role-pill.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(34,211,238,0.08);
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 13px;
+  background: var(--accent);
+  color: #0a0f1e;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 24px;
+  transition: opacity 0.2s, transform 0.1s;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+
+.login-error {
+  color: var(--danger);
+  font-size: 13px;
+  margin-top: 10px;
+  text-align: center;
+  display: none;
+}
+
+/* ===== MAIN APP ===== */
+#app { display: none; min-height: 100vh; }
+
+/* SIDEBAR */
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  z-index: 100;
+  transition: transform 0.3s;
+}
+
+.sidebar-logo {
+  padding: 24px 20px;
+  font-family: 'Space Mono', monospace;
+  font-size: 16px;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  letter-spacing: -1px;
+}
+
+.sidebar-logo span {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  margin-top: 2px;
+  letter-spacing: 0;
+}
+
+.nav-section {
+  padding: 12px 12px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin: 2px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s;
+  border: none;
+  background: none;
+  width: calc(100% - 16px);
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: rgba(34,211,238,0.1); color: var(--accent); }
+.nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--surface2);
+  margin-bottom: 8px;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  color: #0a0f1e;
+  flex-shrink: 0;
+}
+
+.user-info { font-size: 13px; font-weight: 600; }
+.user-role { font-size: 11px; color: var(--muted); }
+
+.btn-logout {
+  width: 100%;
+  padding: 9px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+/* MAIN CONTENT */
+.main {
+  margin-left: 240px;
+  flex: 1;
+  padding: 28px;
+  min-height: 100vh;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.page-header p {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* SECTIONS */
+.section { display: none; animation: fadeUp 0.3s ease; }
+.section.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 16px;
+}
+
+/* STATS GRID */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.stat-card:hover { border-color: var(--accent); }
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--c, var(--accent));
+}
+
+.stat-icon { font-size: 22px; margin-bottom: 10px; }
+.stat-value {
+  font-family: 'Space Mono', monospace;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.stat-change {
+  font-size: 12px;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.stat-change.up { color: var(--success); }
+.stat-change.down { color: var(--danger); }
+
+/* GRID LAYOUTS */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+@media (max-width: 900px) {
+  .two-col, .three-col { grid-template-columns: 1fr; }
+}
+
+/* FORM ELEMENTS */
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.form-group label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.form-group select option { background: var(--surface); }
+
+.btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn-accent { background: var(--accent); color: #0a0f1e; }
+.btn-accent:hover { opacity: 0.85; }
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { background: var(--danger); color: white; }
+.btn-success { background: var(--success); color: #0a0f1e; }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+/* TABLE */
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead th {
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 10px 14px;
+  text-align: left;
+}
+
+tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+tbody tr:hover { background: var(--surface2); }
+tbody tr:last-child td { border-bottom: none; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.badge-green { background: rgba(16,185,129,0.15); color: var(--success); }
+.badge-red { background: rgba(244,63,94,0.15); color: var(--danger); }
+.badge-yellow { background: rgba(245,158,11,0.15); color: var(--accent2); }
+.badge-blue { background: rgba(34,211,238,0.15); color: var(--accent); }
+.badge-purple { background: rgba(167,139,250,0.15); color: var(--accent3); }
+
+/* CHARTS */
+.chart-box {
+  position: relative;
+  height: 220px;
+}
+
+/* SEARCH BAR */
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.search-bar input:focus { outline: none; border-color: var(--accent); }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  z-index: 9999;
+  animation: toastIn 0.3s ease;
+  display: none;
+}
+
+.toast.success { background: var(--success); color: #0a0f1e; }
+.toast.error { background: var(--danger); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* MODAL */
+.modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  backdrop-filter: blur(4px);
+}
+
+.modal-bg.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  width: 480px;
+  max-width: 95vw;
+  animation: fadeUp 0.3s ease;
+}
+
+.modal h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* TABS */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: var(--surface2);
+  padding: 4px;
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.tab {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+
+.tab.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* PROGRESS BAR */
+.progress-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+}
+
+.empty-state .e-icon { font-size: 36px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+/* HAMBURGER */
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 200;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--text);
+}
+
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; padding: 16px; padding-top: 60px; }
+  .hamburger { display: block; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* EXPORT BUTTONS */
+.export-row {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+</style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="authBox" class="auth">
-  <h2>ERP Login</h2>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="login()">Login</button>
-</div>
+<!-- ===== LOGIN ===== -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">⬡ ERP Pro</div>
+    <p>Sign in to your workspace</p>
 
-<!-- APP -->
-<div id="app" class="app">
+    <label>Username</label>
+    <input id="username" placeholder="Enter username" autocomplete="off">
 
-  <aside class="sidebar">
-    <h2>EFP ERP</h2>
-    <li onclick="loadPage('dashboard')">Dashboard</li>
-    <li onclick="loadPage('inventory')">Inventory</li>
-    <li onclick="loadPage('sales')">Sales</li>
-    <li onclick="loadPage('production')">Production</li>
-  </aside>
+    <label>Password</label>
+    <input id="password" type="password" placeholder="Enter password">
 
-  <div class="main">
-
-    <div class="topbar">
-      <span id="user"></span>
-      <button onclick="logout()">Logout</button>
+    <label>Role</label>
+    <div class="role-pills">
+      <div class="role-pill active" onclick="selectRole('admin',this)">🔑 Admin</div>
+      <div class="role-pill" onclick="selectRole('manager',this)">📊 Manager</div>
+      <div class="role-pill" onclick="selectRole('user',this)">👤 User</div>
     </div>
+    <input type="hidden" id="roleInput" value="admin">
 
-    <!-- DASHBOARD -->
-    <div id="dashboard" class="page">
-      <h2>Dashboard</h2>
-      <div id="stats"></div>
-    </div>
-
-    <!-- INVENTORY -->
-    <div id="inventory" class="page hidden">
-      <h2>Inventory</h2>
-      <input id="itemName" placeholder="Item">
-      <input id="itemQty" type="number">
-      <button onclick="addInventory()">Add</button>
-      <ul id="invList"></ul>
-    </div>
-
-    <!-- SALES -->
-    <div id="sales" class="page hidden">
-      <h2>Sales</h2>
-      <input id="cust" placeholder="Customer">
-      <input id="gst" placeholder="GST">
-      <input id="prod" placeholder="Product">
-      <input id="qty" type="number">
-      <input id="rate" type="number">
-      <button onclick="addSale()">Save</button>
-      <button onclick="invoice()">Invoice</button>
-      <ul id="salesList"></ul>
-    </div>
-
-    <!-- PRODUCTION -->
-    <div id="production" class="page hidden">
-      <h2>Production</h2>
-      <input id="pname" placeholder="Product">
-      <button onclick="addProduction()">Add</button>
-      <ul id="prodList"></ul>
-    </div>
-
+    <button class="btn-primary" onclick="login()">Sign In →</button>
+    <div id="loginError" class="login-error">❌ Invalid credentials. Try admin/123</div>
   </div>
 </div>
 
-<script src="script.js"></script>
+<!-- ===== APP ===== -->
+<div id="app">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        ⬡ ERP Pro
+        <span>Business Suite v2.0</span>
+      </div>
+
+      <div class="nav-section">Main</div>
+      <button class="nav-item active" onclick="show('dashboard')"><span class="icon">📊</span> Dashboard</button>
+      <button class="nav-item" onclick="show('inventory')"><span class="icon">📦</span> Inventory</button>
+      <button class="nav-item" onclick="show('sales')"><span class="icon">🛒</span> Sales</button>
+      <button class="nav-item" onclick="show('purchases')"><span class="icon">📥</span> Purchases</button>
+
+      <div class="nav-section">People</div>
+      <button class="nav-item" onclick="show('customers')"><span class="icon">👥</span> Customers</button>
+      <button class="nav-item" onclick="show('users')"><span class="icon">🔐</span> Users</button>
+
+      <div class="nav-section">Analytics</div>
+      <button class="nav-item" onclick="show('reports')"><span class="icon">📈</span> Reports</button>
+
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar" id="userAvatar">A</div>
+          <div>
+            <div class="user-info" id="userInfoName">Admin</div>
+            <div class="user-role" id="userInfoRole">Administrator</div>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="logout()">← Sign Out</button>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+
+      <!-- DASHBOARD -->
+      <div id="dashboard" class="section active">
+        <div class="page-header">
+          <h1>Dashboard</h1>
+          <p>Welcome back! Here's what's happening today.</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card" style="--c: var(--accent)">
+            <div class="stat-icon">📦</div>
+            <div class="stat-value" id="d_products">0</div>
+            <div class="stat-label">Total Products</div>
+          </div>
+          <div class="stat-card" style="--c: var(--success)">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value" id="d_sales_val">₹0</div>
+            <div class="stat-label">Total Sales Revenue</div>
+          </div>
+          <div class="stat-card" style="--c: var(--accent2)">
+            <div class="stat-icon">🛍️</div>
+            <div class="stat-value" id="d_sales_count">0</div>
+            <div class="stat-label">Total Orders</div>
+          </div>
+          <div class="stat-card" style="--c: var(--danger)">
+            <div class="stat-icon">📤</div>
+            <div class="stat-value" id="d_expenses">₹0</div>
+            <div class="stat-label">Total Expenses</div>
+          </div>
+          <div class="stat-card" style="--c: var(--accent3)">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value" id="d_customers">0</div>
+            <div class="stat-label">Customers</div>
+          </div>
+          <div class="stat-card" style="--c: var(--success)">
+            <div class="stat-icon">📈</div>
+            <div class="stat-value" id="d_profit">₹0</div>
+            <div class="stat-label">Net Profit</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Sales Trend (Last 7 Days)</div>
+            <div class="chart-box">
+              <canvas id="salesChart"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Expenses by Category</div>
+            <div class="chart-box">
+              <canvas id="expenseChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Low Stock Alert</div>
+            <div id="lowStockList"><div class="empty-state"><div class="e-icon">✅</div><p>All products are well stocked</p></div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Recent Sales</div>
+            <div id="recentSalesList"><div class="empty-state"><div class="e-icon">🛒</div><p>No recent sales</p></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INVENTORY -->
+      <div id="inventory" class="section">
+        <div class="page-header">
+          <h1>Inventory</h1>
+          <p>Manage your products and stock levels</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Add Product</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Product Name</label>
+              <input id="pname" placeholder="e.g. Widget Pro">
+            </div>
+            <div class="form-group" style="max-width:120px">
+              <label>Category</label>
+              <select id="pcat">
+                <option>Electronics</option>
+                <option>Clothing</option>
+                <option>Food</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group" style="max-width:110px">
+              <label>Quantity</label>
+              <input id="pqty" type="number" placeholder="0" min="0">
+            </div>
+            <div class="form-group" style="max-width:130px">
+              <label>Price (₹)</label>
+              <input id="pprice" type="number" placeholder="0" min="0">
+            </div>
+            <div class="form-group" style="max-width:130px">
+              <label>Low Stock At</label>
+              <input id="plowstock" type="number" placeholder="5" min="0">
+            </div>
+            <button class="btn btn-accent" style="margin-top:16px" onclick="addProduct()">+ Add</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Product List</div>
+          <div class="search-bar">
+            <input id="invSearch" placeholder="🔍 Search products..." oninput="filterTable('ptable','invSearch')">
+            <button class="btn btn-outline btn-sm" onclick="exportTableCSV('ptable','products.csv')">⬇ CSV</button>
+          </div>
+          <div class="table-wrap">
+            <table id="ptable">
+              <thead><tr><th>Name</th><th>Category</th><th>Qty</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SALES -->
+      <div id="sales" class="section">
+        <div class="page-header">
+          <h1>Sales</h1>
+          <p>Create orders and view sales history</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Create Sale</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Customer</label>
+              <select id="scustomer"><option value="">Walk-in Customer</option></select>
+            </div>
+            <div class="form-group">
+              <label>Product</label>
+              <select id="sproduct" onchange="updateSalePrice()"></select>
+            </div>
+            <div class="form-group" style="max-width:100px">
+              <label>Quantity</label>
+              <input id="sqty" type="number" placeholder="1" min="1" oninput="updateSalePrice()">
+            </div>
+            <div class="form-group" style="max-width:140px">
+              <label>Est. Total (with GST)</label>
+              <input id="sTotal" readonly placeholder="₹0.00" style="color:var(--accent)">
+            </div>
+            <button class="btn btn-success" style="margin-top:16px" onclick="makeSale()">🛒 Sell & Invoice</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Sales History</div>
+          <div class="search-bar">
+            <input id="salesSearch" placeholder="🔍 Search sales..." oninput="filterTable('stable','salesSearch')">
+            <button class="btn btn-outline btn-sm" onclick="exportTableCSV('stable','sales.csv')">⬇ CSV</button>
+            <button class="btn btn-outline btn-sm" onclick="exportSalesPDF()">⬇ PDF</button>
+          </div>
+          <div class="table-wrap">
+            <table id="stable">
+              <thead><tr><th>Product</th><th>Customer</th><th>Qty</th><th>Subtotal</th><th>GST</th><th>Grand Total</th><th>Date</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PURCHASES / EXPENSES -->
+      <div id="purchases" class="section">
+        <div class="page-header">
+          <h1>Purchases & Expenses</h1>
+          <p>Track your business expenditures</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Add Expense / Purchase</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Description</label>
+              <input id="expDesc" placeholder="e.g. Office Supplies">
+            </div>
+            <div class="form-group" style="max-width:140px">
+              <label>Category</label>
+              <select id="expCat">
+                <option>Inventory Purchase</option>
+                <option>Utilities</option>
+                <option>Salaries</option>
+                <option>Marketing</option>
+                <option>Rent</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group" style="max-width:130px">
+              <label>Amount (₹)</label>
+              <input id="expAmount" type="number" placeholder="0" min="0">
+            </div>
+            <div class="form-group" style="max-width:150px">
+              <label>Date</label>
+              <input id="expDate" type="date">
+            </div>
+            <button class="btn btn-accent" style="margin-top:16px" onclick="addExpense()">+ Add</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Expense Log</div>
+          <div class="search-bar">
+            <input id="expSearch" placeholder="🔍 Search expenses..." oninput="filterTable('exptable','expSearch')">
+            <button class="btn btn-outline btn-sm" onclick="exportTableCSV('exptable','expenses.csv')">⬇ CSV</button>
+          </div>
+          <div class="table-wrap">
+            <table id="exptable">
+              <thead><tr><th>Description</th><th>Category</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUSTOMERS -->
+      <div id="customers" class="section">
+        <div class="page-header">
+          <h1>Customers</h1>
+          <p>Manage your customer relationships</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Add Customer</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input id="cname" placeholder="e.g. Rahul Sharma">
+            </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input id="cphone" placeholder="e.g. 9876543210" maxlength="10">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input id="cemail" type="email" placeholder="e.g. rahul@email.com">
+            </div>
+            <div class="form-group" style="max-width:120px">
+              <label>Type</label>
+              <select id="ctype">
+                <option>Regular</option>
+                <option>VIP</option>
+                <option>Wholesale</option>
+              </select>
+            </div>
+            <button class="btn btn-accent" style="margin-top:16px" onclick="addCustomer()">+ Add</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Customer Directory</div>
+          <div class="search-bar">
+            <input id="custSearch" placeholder="🔍 Search customers..." oninput="filterTable('ctable','custSearch')">
+            <button class="btn btn-outline btn-sm" onclick="exportTableCSV('ctable','customers.csv')">⬇ CSV</button>
+          </div>
+          <div class="table-wrap">
+            <table id="ctable">
+              <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Type</th><th>Joined</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div id="users" class="section">
+        <div class="page-header">
+          <h1>User Management</h1>
+          <p>Manage roles and access control</p>
+        </div>
+
+        <div class="card" id="adminOnlyMsg" style="display:none">
+          <div class="empty-state">
+            <div class="e-icon">🔒</div>
+            <p>You need Admin privileges to manage users.</p>
+          </div>
+        </div>
+
+        <div id="userMgmtContent">
+          <div class="card">
+            <div class="card-title">Add System User</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Username</label>
+                <input id="newUsername" placeholder="e.g. john_manager">
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input id="newPassword" type="password" placeholder="Min 4 chars">
+              </div>
+              <div class="form-group" style="max-width:130px">
+                <label>Role</label>
+                <select id="newRole">
+                  <option value="admin">Admin</option>
+                  <option value="manager">Manager</option>
+                  <option value="user">User</option>
+                </select>
+              </div>
+              <button class="btn btn-accent" style="margin-top:16px" onclick="addUser()">+ Add User</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">System Users</div>
+            <div class="table-wrap">
+              <table id="usertable">
+                <thead><tr><th>Username</th><th>Role</th><th>Created</th><th>Actions</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div id="reports" class="section">
+        <div class="page-header">
+          <h1>Reports & Analytics</h1>
+          <p>Financial insights and performance metrics</p>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab('rOverview',this)">Overview</button>
+          <button class="tab" onclick="switchTab('rSales',this)">Sales</button>
+          <button class="tab" onclick="switchTab('rExpenses',this)">Expenses</button>
+          <button class="tab" onclick="switchTab('rInventory',this)">Inventory</button>
+        </div>
+
+        <div id="rOverview">
+          <div class="stats-grid">
+            <div class="stat-card" style="--c:var(--success)">
+              <div class="stat-icon">💰</div>
+              <div class="stat-value" id="r_revenue">₹0</div>
+              <div class="stat-label">Gross Revenue</div>
+            </div>
+            <div class="stat-card" style="--c:var(--danger)">
+              <div class="stat-icon">📤</div>
+              <div class="stat-value" id="r_expenses">₹0</div>
+              <div class="stat-label">Total Expenses</div>
+            </div>
+            <div class="stat-card" style="--c:var(--accent)">
+              <div class="stat-icon">📈</div>
+              <div class="stat-value" id="r_profit">₹0</div>
+              <div class="stat-label">Net Profit</div>
+            </div>
+            <div class="stat-card" style="--c:var(--accent3)">
+              <div class="stat-icon">🏛️</div>
+              <div class="stat-value" id="r_gst">₹0</div>
+              <div class="stat-label">Total GST Collected</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Profit & Loss Overview</div>
+            <div class="chart-box" style="height:260px">
+              <canvas id="plChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div id="rSales" style="display:none">
+          <div class="card">
+            <div class="card-title">Sales by Product</div>
+            <div class="chart-box" style="height:260px">
+              <canvas id="productSalesChart"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Top Products by Revenue</div>
+            <div id="topProductsTable"></div>
+          </div>
+        </div>
+
+        <div id="rExpenses" style="display:none">
+          <div class="card">
+            <div class="card-title">Expenses by Category</div>
+            <div class="chart-box" style="height:260px">
+              <canvas id="expCatChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div id="rInventory" style="display:none">
+          <div class="card">
+            <div class="card-title">Stock Value by Product</div>
+            <div class="chart-box" style="height:260px">
+              <canvas id="stockChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px; display:flex; gap:10px">
+          <button class="btn btn-outline" onclick="exportSalesPDF()">⬇ Export Sales PDF</button>
+          <button class="btn btn-outline" onclick="exportTableCSV('stable','sales_report.csv')">⬇ Export Sales CSV</button>
+          <button class="btn btn-outline" onclick="exportTableCSV('exptable','expense_report.csv')">⬇ Expense CSV</button>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /layout -->
+</div><!-- /app -->
+
+<!-- INVOICE MODAL -->
+<div class="modal-bg" id="invoiceModal">
+  <div class="modal" style="width:520px">
+    <h3>🧾 Invoice</h3>
+    <div id="invoiceContent" style="font-size:14px; line-height:2; font-family:'Space Mono',monospace; font-size:13px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('invoiceModal')">Close</button>
+      <button class="btn btn-accent" onclick="printInvoiceModal()">🖨 Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== STATE =====
+let products   = JSON.parse(localStorage.getItem("erp_products"))   || [];
+let customers  = JSON.parse(localStorage.getItem("erp_customers"))  || [];
+let sales      = JSON.parse(localStorage.getItem("erp_sales"))      || [];
+let expenses   = JSON.parse(localStorage.getItem("erp_expenses"))   || [];
+let users      = JSON.parse(localStorage.getItem("erp_users"))      || [
+  { username:"admin", password:"123", role:"admin", created: new Date().toLocaleDateString() }
+];
+let currentRole = "";
+let currentUser = "";
+
+// ===== CHARTS REGISTRY =====
+let charts = {};
+
+// ===== LOGIN =====
+let selectedRole = "admin";
+
+function selectRole(r, el) {
+  selectedRole = r;
+  document.querySelectorAll('.role-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function login() {
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value;
+  const err = document.getElementById('loginError');
+
+  const found = users.find(x => x.username === u && x.password === p);
+  if (!found) {
+    err.style.display = 'block';
+    return;
+  }
+
+  err.style.display = 'none';
+  currentRole = found.role;
+  currentUser = found.username;
+
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  document.getElementById('userAvatar').textContent = u[0].toUpperCase();
+  document.getElementById('userInfoName').textContent = u;
+  document.getElementById('userInfoRole').textContent = found.role.charAt(0).toUpperCase() + found.role.slice(1);
+
+  // Hide users section for non-admins
+  if (currentRole !== 'admin') {
+    document.getElementById('adminOnlyMsg').style.display = 'block';
+    document.getElementById('userMgmtContent').style.display = 'none';
+  }
+
+  // Set today's date on expense form
+  document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
+
+  loadAll();
+  show('dashboard');
+}
+
+function logout() { location.reload(); }
+
+// ===== NAVIGATION =====
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  const btn = [...document.querySelectorAll('.nav-item')].find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${id}'`));
+  if (btn) btn.classList.add('active');
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+  if (id === 'reports') renderReportCharts();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ===== TABS =====
+function switchTab(tabId, btn) {
+  ['rOverview','rSales','rExpenses','rInventory'].forEach(t => {
+    const el = document.getElementById(t);
+    if (el) el.style.display = 'none';
+  });
+  document.getElementById(tabId).style.display = 'block';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderReportCharts();
+}
+
+// ===== SAVE =====
+function save() {
+  localStorage.setItem("erp_products",  JSON.stringify(products));
+  localStorage.setItem("erp_customers", JSON.stringify(customers));
+  localStorage.setItem("erp_sales",     JSON.stringify(sales));
+  localStorage.setItem("erp_expenses",  JSON.stringify(expenses));
+  localStorage.setItem("erp_users",     JSON.stringify(users));
+  loadAll();
+}
+
+// ===== TOAST =====
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type}`;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// ===== MODAL =====
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ===== VALIDATION =====
+function validateRequired(fields) {
+  for (let [val, name] of fields) {
+    if (!val || val === '') { showToast(`⚠️ ${name} is required`, 'error'); return false; }
+  }
+  return true;
+}
+
+// ===== INVENTORY =====
+function addProduct() {
+  const name  = document.getElementById('pname').value.trim();
+  const cat   = document.getElementById('pcat').value;
+  const qty   = Number(document.getElementById('pqty').value);
+  const price = Number(document.getElementById('pprice').value);
+  const low   = Number(document.getElementById('plowstock').value) || 5;
+
+  if (!validateRequired([[name,'Product Name']])) return;
+  if (qty < 0 || price <= 0) { showToast('⚠️ Enter valid qty and price', 'error'); return; }
+
+  products.push({ name, cat, qty, price, low, added: new Date().toLocaleDateString() });
+  ['pname','pqty','pprice','plowstock'].forEach(id => document.getElementById(id).value = '');
+  save();
+  showToast(`✅ Product "${name}" added!`);
+}
+
+function delProduct(i) {
+  if (!confirm('Delete this product?')) return;
+  products.splice(i, 1);
+  save();
+  showToast('🗑️ Product deleted', 'error');
+}
+
+function loadProducts() {
+  const tb = document.querySelector('#ptable tbody');
+  if (!products.length) {
+    tb.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="e-icon">📦</div><p>No products yet</p></div></td></tr>`;
+    document.getElementById('sproduct').innerHTML = '<option>No products</option>';
+    return;
+  }
+  tb.innerHTML = products.map((p,i) => {
+    const status = p.qty === 0 ? `<span class="badge badge-red">Out of Stock</span>`
+                 : p.qty <= p.low ? `<span class="badge badge-yellow">Low Stock</span>`
+                 : `<span class="badge badge-green">In Stock</span>`;
+    return `<tr>
+      <td><strong>${p.name}</strong></td>
+      <td><span class="badge badge-blue">${p.cat||'—'}</span></td>
+      <td>${p.qty}</td>
+      <td>₹${p.price.toLocaleString('en-IN')}</td>
+      <td>${status}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="delProduct(${i})">Delete</button></td>
+    </tr>`;
+  }).join('');
+
+  // Update product dropdowns
+  const opts = products.map(p => `<option value="${p.name}">${p.name} (Stock: ${p.qty})</option>`).join('');
+  document.getElementById('sproduct').innerHTML = opts;
+}
+
+// ===== CUSTOMERS =====
+function addCustomer() {
+  const name  = document.getElementById('cname').value.trim();
+  const phone = document.getElementById('cphone').value.trim();
+  const email = document.getElementById('cemail').value.trim();
+  const type  = document.getElementById('ctype').value;
+
+  if (!validateRequired([[name,'Name']])) return;
+  if (phone && !/^\d{10}$/.test(phone)) { showToast('⚠️ Phone must be 10 digits', 'error'); return; }
+
+  customers.push({ name, phone, email, type, joined: new Date().toLocaleDateString() });
+  ['cname','cphone','cemail'].forEach(id => document.getElementById(id).value='');
+  save();
+  showToast(`✅ Customer "${name}" added!`);
+}
+
+function delCustomer(i) {
+  if (!confirm('Delete this customer?')) return;
+  customers.splice(i, 1);
+  save();
+  showToast('🗑️ Customer deleted', 'error');
+}
+
+function loadCustomers() {
+  const tb = document.querySelector('#ctable tbody');
+  const sel = document.getElementById('scustomer');
+  if (!customers.length) {
+    tb.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="e-icon">👥</div><p>No customers yet</p></div></td></tr>`;
+    sel.innerHTML = '<option value="">Walk-in Customer</option>';
+    return;
+  }
+  tb.innerHTML = customers.map((c,i) => {
+    const typeBadge = c.type === 'VIP' ? 'badge-yellow' : c.type === 'Wholesale' ? 'badge-purple' : 'badge-blue';
+    return `<tr>
+      <td><strong>${c.name}</strong></td>
+      <td>${c.phone||'—'}</td>
+      <td>${c.email||'—'}</td>
+      <td><span class="badge ${typeBadge}">${c.type}</span></td>
+      <td>${c.joined}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="delCustomer(${i})">Delete</button></td>
+    </tr>`;
+  }).join('');
+
+  sel.innerHTML = '<option value="">Walk-in Customer</option>' +
+    customers.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+}
+
+// ===== SALES =====
+function updateSalePrice() {
+  const name = document.getElementById('sproduct').value;
+  const qty  = Number(document.getElementById('sqty').value) || 0;
+  const p    = products.find(x => x.name === name);
+  if (!p || qty <= 0) { document.getElementById('sTotal').value = ''; return; }
+  const total = qty * p.price;
+  const grand = total * 1.18;
+  document.getElementById('sTotal').value = `₹${grand.toLocaleString('en-IN',{minimumFractionDigits:2})}`;
+}
+
+function makeSale() {
+  const name     = document.getElementById('sproduct').value;
+  const customer = document.getElementById('scustomer').value;
+  const qty      = Number(document.getElementById('sqty').value);
+
+  if (!name) { showToast('⚠️ Select a product', 'error'); return; }
+  if (!qty || qty <= 0) { showToast('⚠️ Enter valid quantity', 'error'); return; }
+
+  const p = products.find(x => x.name === name);
+  if (!p) { showToast('⚠️ Product not found', 'error'); return; }
+  if (p.qty < qty) { showToast(`⚠️ Only ${p.qty} in stock!`, 'error'); return; }
+
+  p.qty -= qty;
+  const subtotal = qty * p.price;
+  const gst      = +(subtotal * 0.18).toFixed(2);
+  const grand    = +(subtotal + gst).toFixed(2);
+  const date     = new Date().toLocaleString();
+
+  const sale = { name, customer: customer||'Walk-in', qty, subtotal, gst, grand, date };
+  sales.push(sale);
+  document.getElementById('sqty').value = '';
+  document.getElementById('sTotal').value = '';
+  save();
+  showToast(`✅ Sale of ${qty}x ${name} recorded!`);
+  showInvoice(sale);
+}
+
+function loadSales() {
+  const tb = document.querySelector('#stable tbody');
+  if (!sales.length) {
+    tb.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="e-icon">🛒</div><p>No sales yet</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = [...sales].reverse().map(s => `<tr>
+    <td><strong>${s.name}</strong></td>
+    <td>${s.customer||'Walk-in'}</td>
+    <td>${s.qty}</td>
+    <td>₹${(s.subtotal||0).toLocaleString('en-IN')}</td>
+    <td>₹${(s.gst||0).toLocaleString('en-IN')}</td>
+    <td><strong>₹${(s.grand||0).toLocaleString('en-IN')}</strong></td>
+    <td>${s.date}</td>
+  </tr>`).join('');
+}
+
+// ===== INVOICE =====
+let currentInvoice = null;
+
+function showInvoice(sale) {
+  currentInvoice = sale;
+  const inv = `
+    <div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px">
+      <strong>ERP SaaS Pro</strong><br>
+      <span style="color:var(--muted)">Tax Invoice</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;font-size:12px">
+      <div><span style="color:var(--muted)">Customer:</span> ${sale.customer}</div>
+      <div><span style="color:var(--muted)">Date:</span> ${sale.date}</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px">
+      <thead><tr style="border-bottom:1px solid var(--border)">
+        <th style="text-align:left;padding:6px;color:var(--muted)">Product</th>
+        <th style="text-align:right;padding:6px;color:var(--muted)">Qty</th>
+        <th style="text-align:right;padding:6px;color:var(--muted)">Rate</th>
+        <th style="text-align:right;padding:6px;color:var(--muted)">Amount</th>
+      </tr></thead>
+      <tbody><tr>
+        <td style="padding:8px 6px">${sale.name}</td>
+        <td style="text-align:right;padding:8px 6px">${sale.qty}</td>
+        <td style="text-align:right;padding:8px 6px">₹${(sale.subtotal/sale.qty).toLocaleString('en-IN')}</td>
+        <td style="text-align:right;padding:8px 6px">₹${sale.subtotal.toLocaleString('en-IN')}</td>
+      </tr></tbody>
+    </table>
+    <div style="text-align:right;border-top:1px solid var(--border);padding-top:12px">
+      <div>Subtotal: ₹${sale.subtotal.toLocaleString('en-IN')}</div>
+      <div style="color:var(--muted)">GST (18%): ₹${sale.gst.toLocaleString('en-IN')}</div>
+      <div style="font-size:18px;font-weight:700;color:var(--accent);margin-top:8px">Grand Total: ₹${sale.grand.toLocaleString('en-IN')}</div>
+    </div>
+  `;
+  document.getElementById('invoiceContent').innerHTML = inv;
+  document.getElementById('invoiceModal').classList.add('open');
+}
+
+function printInvoiceModal() {
+  if (!currentInvoice) return;
+  const s = currentInvoice;
+  const w = window.open('','_blank','width=600,height=700');
+  w.document.write(`
+    <html><head><title>Invoice</title>
+    <style>body{font-family:Arial;padding:40px;max-width:500px;margin:auto}
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left}
+    th{background:#f5f5f5}
+    .total{font-size:20px;font-weight:bold;color:#0a6}</style>
+    </head><body>
+    <h2>🧾 Tax Invoice — ERP Pro</h2>
+    <p>Customer: <strong>${s.customer}</strong></p>
+    <p>Date: ${s.date}</p>
+    <table>
+      <thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+      <tbody><tr>
+        <td>${s.name}</td><td>${s.qty}</td>
+        <td>₹${(s.subtotal/s.qty).toLocaleString('en-IN')}</td>
+        <td>₹${s.subtotal.toLocaleString('en-IN')}</td>
+      </tr></tbody>
+    </table>
+    <p>Subtotal: ₹${s.subtotal.toLocaleString('en-IN')}</p>
+    <p>GST (18%): ₹${s.gst.toLocaleString('en-IN')}</p>
+    <p class="total">Grand Total: ₹${s.grand.toLocaleString('en-IN')}</p>
+    <script>window.print();<\/script>
+    </body></html>
+  `);
+  w.document.close();
+}
+
+// ===== EXPENSES =====
+function addExpense() {
+  const desc   = document.getElementById('expDesc').value.trim();
+  const cat    = document.getElementById('expCat').value;
+  const amount = Number(document.getElementById('expAmount').value);
+  const date   = document.getElementById('expDate').value;
+
+  if (!validateRequired([[desc,'Description']])) return;
+  if (!amount || amount <= 0) { showToast('⚠️ Enter valid amount', 'error'); return; }
+
+  expenses.push({ desc, cat, amount, date: date || new Date().toLocaleDateString() });
+  document.getElementById('expDesc').value = '';
+  document.getElementById('expAmount').value = '';
+  save();
+  showToast(`✅ Expense "₹${amount}" added!`);
+}
+
+function delExpense(i) {
+  if (!confirm('Delete this expense?')) return;
+  expenses.splice(i, 1);
+  save();
+  showToast('🗑️ Expense deleted', 'error');
+}
+
+function loadExpenses() {
+  const tb = document.querySelector('#exptable tbody');
+  if (!expenses.length) {
+    tb.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="e-icon">📤</div><p>No expenses recorded</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = [...expenses].reverse().map((e,ri) => {
+    const i = expenses.length - 1 - ri;
+    const catBadge = e.cat === 'Salaries' ? 'badge-purple' : e.cat === 'Inventory Purchase' ? 'badge-blue' : 'badge-yellow';
+    return `<tr>
+      <td>${e.desc}</td>
+      <td><span class="badge ${catBadge}">${e.cat}</span></td>
+      <td>₹${e.amount.toLocaleString('en-IN')}</td>
+      <td>${e.date}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="delExpense(${i})">Delete</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== USERS =====
+function addUser() {
+  if (currentRole !== 'admin') { showToast('⚠️ Admin only', 'error'); return; }
+  const uname = document.getElementById('newUsername').value.trim();
+  const pass  = document.getElementById('newPassword').value;
+  const role  = document.getElementById('newRole').value;
+
+  if (!validateRequired([[uname,'Username'],[pass,'Password']])) return;
+  if (pass.length < 4) { showToast('⚠️ Password min 4 chars', 'error'); return; }
+  if (users.find(u => u.username === uname)) { showToast('⚠️ Username already exists', 'error'); return; }
+
+  users.push({ username: uname, password: pass, role, created: new Date().toLocaleDateString() });
+  document.getElementById('newUsername').value = '';
+  document.getElementById('newPassword').value = '';
+  save();
+  showToast(`✅ User "${uname}" created!`);
+}
+
+function delUser(i) {
+  if (users[i].username === currentUser) { showToast("⚠️ Can't delete yourself", 'error'); return; }
+  if (!confirm('Delete this user?')) return;
+  users.splice(i, 1);
+  save();
+  showToast('🗑️ User deleted', 'error');
+}
+
+function loadUsers() {
+  const tb = document.querySelector('#usertable tbody');
+  const roleBadge = r => r === 'admin' ? 'badge-red' : r === 'manager' ? 'badge-yellow' : 'badge-blue';
+  tb.innerHTML = users.map((u,i) => `<tr>
+    <td><strong>${u.username}</strong>${u.username===currentUser?' <span class="badge badge-green">You</span>':''}</td>
+    <td><span class="badge ${roleBadge(u.role)}">${u.role}</span></td>
+    <td>${u.created||'—'}</td>
+    <td>${u.username!==currentUser ? `<button class="btn btn-danger btn-sm" onclick="delUser(${i})">Delete</button>` : '—'}</td>
+  </tr>`).join('');
+}
+
+// ===== DASHBOARD =====
+function loadDashboard() {
+  const totalRevenue  = sales.reduce((a,b) => a+(b.grand||0), 0);
+  const totalExpenses = expenses.reduce((a,b) => a+(b.amount||0), 0);
+  const totalGST      = sales.reduce((a,b) => a+(b.gst||0), 0);
+  const profit        = totalRevenue - totalExpenses;
+
+  document.getElementById('d_products').textContent    = products.length;
+  document.getElementById('d_customers').textContent   = customers.length;
+  document.getElementById('d_sales_count').textContent = sales.length;
+  document.getElementById('d_sales_val').textContent   = '₹'+totalRevenue.toLocaleString('en-IN');
+  document.getElementById('d_expenses').textContent    = '₹'+totalExpenses.toLocaleString('en-IN');
+  document.getElementById('d_profit').textContent      = '₹'+profit.toLocaleString('en-IN');
+
+  // Low Stock
+  const lowStock = products.filter(p => p.qty <= p.low);
+  const lsEl = document.getElementById('lowStockList');
+  if (!lowStock.length) {
+    lsEl.innerHTML = `<div class="empty-state"><div class="e-icon">✅</div><p>All products well stocked</p></div>`;
+  } else {
+    lsEl.innerHTML = lowStock.map(p => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span>${p.name}</span>
+        <div style="text-align:right">
+          <span style="color:${p.qty===0?'var(--danger)':'var(--accent2)'};font-weight:700">${p.qty} left</span>
+          <div class="progress-bar" style="width:80px">
+            <div class="progress-fill" style="width:${Math.min(100,(p.qty/p.low)*100)}%;background:${p.qty===0?'var(--danger)':'var(--accent2)'}"></div>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Recent Sales
+  const rsEl = document.getElementById('recentSalesList');
+  const recent = [...sales].slice(-5).reverse();
+  if (!recent.length) {
+    rsEl.innerHTML = `<div class="empty-state"><div class="e-icon">🛒</div><p>No sales yet</p></div>`;
+  } else {
+    rsEl.innerHTML = recent.map(s => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div>
+          <strong>${s.name}</strong> × ${s.qty}
+          <div style="font-size:12px;color:var(--muted)">${s.customer}</div>
+        </div>
+        <strong style="color:var(--success)">₹${(s.grand||0).toLocaleString('en-IN')}</strong>
+      </div>`).join('');
+  }
+
+  // Mini charts
+  renderDashboardCharts();
+}
+
+// ===== CHART HELPERS =====
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+const chartDefaults = {
+  plugins: { legend: { labels: { color: '#64748b', font: { family: 'DM Sans', size: 11 } } } },
+  scales: {
+    x: { ticks: { color: '#64748b', font: { family: 'DM Sans' } }, grid: { color: '#1e2d45' } },
+    y: { ticks: { color: '#64748b', font: { family: 'DM Sans' } }, grid: { color: '#1e2d45' } }
+  }
+};
+
+function renderDashboardCharts() {
+  // Sales last 7 days
+  const days = [...Array(7)].map((_,i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6-i));
+    return d.toLocaleDateString('en-IN',{month:'short',day:'numeric'});
+  });
+  const salesByDay = days.map(d => sales.filter(s => {
+    try { return new Date(s.date).toLocaleDateString('en-IN',{month:'short',day:'numeric'}) === d; } catch { return false; }
+  }).reduce((a,b) => a+(b.grand||0), 0));
+
+  destroyChart('salesChart');
+  const sc = document.getElementById('salesChart');
+  if (sc) {
+    charts['salesChart'] = new Chart(sc, {
+      type: 'line',
+      data: {
+        labels: days,
+        datasets: [{ label: 'Revenue (₹)', data: salesByDay, borderColor: '#22d3ee',
+          backgroundColor: 'rgba(34,211,238,0.08)', fill: true, tension: 0.4, pointRadius: 3 }]
+      },
+      options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+    });
+  }
+
+  // Expense by category
+  const expCats = {};
+  expenses.forEach(e => { expCats[e.cat] = (expCats[e.cat]||0) + e.amount; });
+  destroyChart('expenseChart');
+  const ec = document.getElementById('expenseChart');
+  if (ec && Object.keys(expCats).length) {
+    charts['expenseChart'] = new Chart(ec, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(expCats),
+        datasets: [{ data: Object.values(expCats),
+          backgroundColor: ['#22d3ee','#f59e0b','#a78bfa','#10b981','#f43f5e','#3b82f6'] }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'right', labels: { color:'#64748b', font:{family:'DM Sans'} } } } }
+    });
+  }
+}
+
+function renderReportCharts() {
+  const totalRevenue  = sales.reduce((a,b) => a+(b.grand||0), 0);
+  const totalExpenses = expenses.reduce((a,b) => a+(b.amount||0), 0);
+  const totalGST      = sales.reduce((a,b) => a+(b.gst||0), 0);
+  const profit        = totalRevenue - totalExpenses;
+
+  document.getElementById('r_revenue').textContent  = '₹'+totalRevenue.toLocaleString('en-IN');
+  document.getElementById('r_expenses').textContent = '₹'+totalExpenses.toLocaleString('en-IN');
+  document.getElementById('r_profit').textContent   = '₹'+profit.toLocaleString('en-IN');
+  document.getElementById('r_gst').textContent      = '₹'+totalGST.toLocaleString('en-IN');
+
+  // P&L chart
+  destroyChart('plChart');
+  const plc = document.getElementById('plChart');
+  if (plc) {
+    charts['plChart'] = new Chart(plc, {
+      type: 'bar',
+      data: {
+        labels: ['Revenue','Expenses','Net Profit'],
+        datasets: [{
+          data: [totalRevenue, totalExpenses, profit],
+          backgroundColor: ['rgba(34,211,238,0.7)','rgba(244,63,94,0.7)', profit>=0?'rgba(16,185,129,0.7)':'rgba(244,63,94,0.7)'],
+          borderRadius: 6
+        }]
+      },
+      options: { ...chartDefaults, responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } } }
+    });
+  }
+
+  // Product sales
+  const prodSales = {};
+  sales.forEach(s => { prodSales[s.name] = (prodSales[s.name]||0) + (s.grand||0); });
+  destroyChart('productSalesChart');
+  const psc = document.getElementById('productSalesChart');
+  if (psc) {
+    charts['productSalesChart'] = new Chart(psc, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(prodSales),
+        datasets: [{ label: 'Revenue (₹)', data: Object.values(prodSales),
+          backgroundColor: 'rgba(167,139,250,0.7)', borderRadius: 6 }]
+      },
+      options: { ...chartDefaults, responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        indexAxis: 'y'
+      }
+    });
+  }
+
+  // Top products table
+  const tpEl = document.getElementById('topProductsTable');
+  const sorted = Object.entries(prodSales).sort((a,b)=>b[1]-a[1]);
+  if (!sorted.length) { tpEl.innerHTML = `<div class="empty-state"><div class="e-icon">📊</div><p>No sales data</p></div>`; }
+  else {
+    tpEl.innerHTML = `<table><thead><tr><th>#</th><th>Product</th><th>Revenue</th></tr></thead><tbody>
+      ${sorted.map(([name,rev],i)=>`<tr><td>${i+1}</td><td>${name}</td><td><strong>₹${rev.toLocaleString('en-IN')}</strong></td></tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  // Expense category chart
+  const expCats = {};
+  expenses.forEach(e => { expCats[e.cat] = (expCats[e.cat]||0) + e.amount; });
+  destroyChart('expCatChart');
+  const ecc = document.getElementById('expCatChart');
+  if (ecc) {
+    charts['expCatChart'] = new Chart(ecc, {
+      type: 'pie',
+      data: {
+        labels: Object.keys(expCats),
+        datasets: [{ data: Object.values(expCats),
+          backgroundColor: ['#22d3ee','#f59e0b','#a78bfa','#10b981','#f43f5e','#3b82f6'] }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'right', labels: { color:'#64748b', font:{family:'DM Sans'} } } } }
+    });
+  }
+
+  // Stock value chart
+  destroyChart('stockChart');
+  const stc = document.getElementById('stockChart');
+  if (stc && products.length) {
+    charts['stockChart'] = new Chart(stc, {
+      type: 'bar',
+      data: {
+        labels: products.map(p=>p.name),
+        datasets: [
+          { label: 'Qty', data: products.map(p=>p.qty), backgroundColor: 'rgba(34,211,238,0.6)', borderRadius:6 },
+          { label: 'Value (₹)', data: products.map(p=>p.qty*p.price), backgroundColor: 'rgba(245,158,11,0.6)', borderRadius:6 }
+        ]
+      },
+      options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+    });
+  }
+}
+
+// ===== SEARCH / FILTER =====
+function filterTable(tableId, inputId) {
+  const q = document.getElementById(inputId).value.toLowerCase();
+  document.querySelectorAll(`#${tableId} tbody tr`).forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ===== CSV EXPORT =====
+function exportTableCSV(tableId, filename) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  const rows = [...table.querySelectorAll('tr')];
+  const csv = rows.map(r => [...r.querySelectorAll('th,td')].map(c => `"${c.textContent.trim()}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  showToast(`⬇ ${filename} downloaded!`);
+}
+
+// ===== PDF EXPORT =====
+function exportSalesPDF() {
+  const w = window.open('','_blank','width=800,height:900');
+  const totalRev = sales.reduce((a,b)=>a+(b.grand||0),0);
+  w.document.write(`
+    <html><head><title>Sales Report</title>
+    <style>
+    body{font-family:Arial;padding:40px;color:#1e293b}
+    h1{color:#0f172a;border-bottom:2px solid #22d3ee;padding-bottom:10px}
+    table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}
+    th{background:#0f172a;color:white;padding:10px}
+    td{padding:9px;border-bottom:1px solid #e2e8f0}
+    tr:nth-child(even){background:#f8fafc}
+    .total{font-size:18px;font-weight:bold;margin-top:20px;text-align:right;color:#0a6}
+    </style></head><body>
+    <h1>📊 Sales Report — ERP Pro</h1>
+    <p>Generated: ${new Date().toLocaleString()}</p>
+    <table>
+      <thead><tr><th>Product</th><th>Customer</th><th>Qty</th><th>Subtotal</th><th>GST</th><th>Grand Total</th><th>Date</th></tr></thead>
+      <tbody>${sales.map(s=>`<tr>
+        <td>${s.name}</td><td>${s.customer||'Walk-in'}</td>
+        <td>${s.qty}</td><td>₹${(s.subtotal||0).toLocaleString('en-IN')}</td>
+        <td>₹${(s.gst||0).toLocaleString('en-IN')}</td>
+        <td><strong>₹${(s.grand||0).toLocaleString('en-IN')}</strong></td>
+        <td>${s.date}</td>
+      </tr>`).join('')}</tbody>
+    </table>
+    <p class="total">Total Revenue: ₹${totalRev.toLocaleString('en-IN')}</p>
+    <script>window.print();<\/script>
+    </body></html>`);
+  w.document.close();
+}
+
+// ===== LOAD ALL =====
+function loadAll() {
+  loadProducts();
+  loadCustomers();
+  loadSales();
+  loadExpenses();
+  loadUsers();
+  loadDashboard();
+}
+
+// Pre-populate expense date
+document.addEventListener('DOMContentLoaded', () => {
+  const ed = document.getElementById('expDate');
+  if (ed) ed.value = new Date().toISOString().split('T')[0];
+});
+
+</script>
 </body>
 </html>
