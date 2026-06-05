@@ -146,6 +146,18 @@ body {
   display: none;
 }
 
+.login-reset-hint {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 8px;
+  text-align: center;
+  display: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.login-reset-hint:hover { color: var(--accent); }
+
 /* ===== MAIN APP ===== */
 #app { display: none; min-height: 100vh; }
 
@@ -205,7 +217,6 @@ body {
   cursor: pointer;
   color: var(--muted);
   font-size: 14px;
-
   font-weight: 500;
   transition: all 0.15s;
   border: none;
@@ -720,7 +731,8 @@ tbody tr:last-child td { border-bottom: none; }
     <input type="hidden" id="roleInput" value="admin">
 
     <button class="btn-primary" onclick="login()">Sign In →</button>
-    <div id="loginError" class="login-error">❌ Invalid credentials. Try admin/123</div>
+    <div id="loginError" class="login-error">❌ Invalid credentials. Default: admin / 123</div>
+    <div id="loginResetHint" class="login-reset-hint" onclick="resetAndLogin()">🔄 Click here to reset app data &amp; restore default login</div>
   </div>
 </div>
 
@@ -1342,15 +1354,33 @@ tbody tr:last-child td { border-bottom: none; }
 
 <script>
 // ===== STATE =====
+// FIX: Load from localStorage, but always ensure the default admin user exists.
+// The original bug: if erp_users was saved as [] (empty array), the || fallback
+// never fires because [] is truthy — so the default admin was permanently lost.
+
+const DEFAULT_ADMIN = { username: "admin", password: "123", role: "admin", created: new Date().toLocaleDateString() };
+
 let products   = JSON.parse(localStorage.getItem("erp_products"))   || [];
 let customers  = JSON.parse(localStorage.getItem("erp_customers"))  || [];
 let sales      = JSON.parse(localStorage.getItem("erp_sales"))      || [];
 let expenses   = JSON.parse(localStorage.getItem("erp_expenses"))   || [];
-let users      = JSON.parse(localStorage.getItem("erp_users"))      || [
-  { username:"admin", password:"123", role:"admin", created: new Date().toLocaleDateString() }
-];
+
+// FIX: Load users safely — always ensure admin exists
+let users = (function() {
+  let stored = null;
+  try { stored = JSON.parse(localStorage.getItem("erp_users")); } catch(e) {}
+  if (!Array.isArray(stored) || stored.length === 0) {
+    return [DEFAULT_ADMIN];
+  }
+  // Ensure the default admin is always present (in case it was deleted externally)
+  const hasAdmin = stored.some(u => u.username === "admin");
+  if (!hasAdmin) stored.unshift(DEFAULT_ADMIN);
+  return stored;
+})();
+
 let currentRole = "";
 let currentUser = "";
+let loginAttempts = 0;
 
 // ===== CHARTS REGISTRY =====
 let charts = {};
@@ -1368,14 +1398,27 @@ function login() {
   const u = document.getElementById('username').value.trim();
   const p = document.getElementById('password').value;
   const err = document.getElementById('loginError');
+  const hint = document.getElementById('loginResetHint');
+
+  // FIX: Re-ensure users array is valid before checking (guards against in-memory corruption)
+  if (!Array.isArray(users) || users.length === 0) {
+    users = [DEFAULT_ADMIN];
+  }
 
   const found = users.find(x => x.username === u && x.password === p);
   if (!found) {
+    loginAttempts++;
     err.style.display = 'block';
+    // Show reset hint after 2 failed attempts
+    if (loginAttempts >= 2) {
+      hint.style.display = 'block';
+    }
     return;
   }
 
+  loginAttempts = 0;
   err.style.display = 'none';
+  hint.style.display = 'none';
   currentRole = found.role;
   currentUser = found.username;
 
@@ -1399,6 +1442,17 @@ function login() {
   show('dashboard');
 }
 
+// FIX: Reset function — clears all app data and restores default admin
+function resetAndLogin() {
+  if (!confirm('⚠️ This will clear ALL app data (products, sales, customers, expenses) and restore the default admin login (admin / 123).\n\nContinue?')) return;
+  localStorage.removeItem('erp_products');
+  localStorage.removeItem('erp_customers');
+  localStorage.removeItem('erp_sales');
+  localStorage.removeItem('erp_expenses');
+  localStorage.removeItem('erp_users');
+  location.reload();
+}
+
 function logout() { location.reload(); }
 
 // ===== NAVIGATION =====
@@ -1408,7 +1462,6 @@ function show(id) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const btn = [...document.querySelectorAll('.nav-item')].find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${id}'`));
   if (btn) btn.classList.add('active');
-  // Close mobile sidebar
   document.getElementById('sidebar').classList.remove('open');
   if (id === 'reports') renderReportCharts();
 }
@@ -1504,7 +1557,6 @@ function loadProducts() {
     </tr>`;
   }).join('');
 
-  // Update product dropdowns
   const opts = products.map(p => `<option value="${p.name}">${p.name} (Stock: ${p.qty})</option>`).join('');
   document.getElementById('sproduct').innerHTML = opts;
 }
@@ -1661,109 +1713,28 @@ function printInvoiceModal() {
     th{background:#f5f5f5}
     .total{font-size:20px;font-weight:bold;color:#0a6}</style>
     </head><body>
-    <div class="invoice-container">
-        <h2>🧾 TAX INVOICE</h2>
-        <h3>RECONS ERP Pro</h3>
-        <body>
-    <div class="invoice-container">
-        <h2>🧾 TAX INVOICE</h2>
-        <h3>RECONS ERP Pro</h3>
-        <p><strong>Powered by ALOK</strong></p>
-
-        <hr>
-
-        <p><strong>Customer Name:</strong> ${s.customer}</p>
-        <p><strong>Invoice Date:</strong> ${s.date}</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Product Description</th>
-                    <th>Quantity</th>
-                    <th>Unit Rate (₹)</th>
-                    <th>Amount (₹)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>${s.name}</td>
-                    <td>${s.qty}</td>
-                    <td>${(s.subtotal / s.qty).toLocaleString('en-IN')}</td>
-                    <td>${s.subtotal.toLocaleString('en-IN')}</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="totals">
-            <p><strong>Subtotal:</strong> ₹${s.subtotal.toLocaleString('en-IN')}</p>
-            <p><strong>GST @ 18%:</strong> ₹${s.gst.toLocaleString('en-IN')}</p>
-            <p class="total">
-                <strong>Grand Total:</strong>
-                ₹${s.grand.toLocaleString('en-IN')}
-            </p>
-        </div>
-
-        <hr>
-
-        <p style="text-align:center;">
-            Thank you for your business.<br>
-            <strong>RECONS ERP Pro</strong><br>
-            Smart Business Management Solution
-        </p>
-    </div>
-
-    <script>
-        window.print();
-    </script>
-</body>
-
-        <hr>
-
-        <p><strong>Customer Name:</strong> ${s.customer}</p>
-        <p><strong>Invoice Date:</strong> ${s.date}</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Product Description</th>
-                    <th>Quantity</th>
-                    <th>Unit Rate (₹)</th>
-                    <th>Amount (₹)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>${s.name}</td>
-                    <td>${s.qty}</td>
-                    <td>${(s.subtotal / s.qty).toLocaleString('en-IN')}</td>
-                    <td>${s.subtotal.toLocaleString('en-IN')}</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="totals">
-            <p><strong>Subtotal:</strong> ₹${s.subtotal.toLocaleString('en-IN')}</p>
-            <p><strong>GST @ 18%:</strong> ₹${s.gst.toLocaleString('en-IN')}</p>
-            <p class="total">
-                <strong>Grand Total:</strong>
-                ₹${s.grand.toLocaleString('en-IN')}
-            </p>
-        </div>
-
-        <hr>
-
-        <p style="text-align:center;">
-            Thank you for your business.<br>
-            <strong>RECONS ERP Pro</strong><br>
-            Smart Business Management Solution
-        </p>
-    </div>
-
-    <script>
-        window.print();
-    </script>
-</body></html>
-  `);
+    <h2>🧾 TAX INVOICE</h2>
+    <h3>RECONS ERP Pro</h3>
+    <p><strong>Powered by ALOK</strong></p>
+    <hr>
+    <p><strong>Customer Name:</strong> ${s.customer}</p>
+    <p><strong>Invoice Date:</strong> ${s.date}</p>
+    <table>
+      <thead><tr><th>Product Description</th><th>Quantity</th><th>Unit Rate (₹)</th><th>Amount (₹)</th></tr></thead>
+      <tbody><tr>
+        <td>${s.name}</td>
+        <td>${s.qty}</td>
+        <td>${(s.subtotal / s.qty).toLocaleString('en-IN')}</td>
+        <td>${s.subtotal.toLocaleString('en-IN')}</td>
+      </tr></tbody>
+    </table>
+    <p><strong>Subtotal:</strong> ₹${s.subtotal.toLocaleString('en-IN')}</p>
+    <p><strong>GST @ 18%:</strong> ₹${s.gst.toLocaleString('en-IN')}</p>
+    <p class="total"><strong>Grand Total:</strong> ₹${s.grand.toLocaleString('en-IN')}</p>
+    <hr>
+    <p style="text-align:center;">Thank you for your business.<br><strong>RECONS ERP Pro</strong><br>Smart Business Management Solution</p>
+    <script>window.print();<\/script>
+    </body></html>`);
   w.document.close();
 }
 
@@ -1851,7 +1822,6 @@ function loadUsers() {
 function loadDashboard() {
   const totalRevenue  = sales.reduce((a,b) => a+(b.grand||0), 0);
   const totalExpenses = expenses.reduce((a,b) => a+(b.amount||0), 0);
-  const totalGST      = sales.reduce((a,b) => a+(b.gst||0), 0);
   const profit        = totalRevenue - totalExpenses;
 
   document.getElementById('d_products').textContent    = products.length;
@@ -1861,7 +1831,6 @@ function loadDashboard() {
   document.getElementById('d_expenses').textContent    = '₹'+totalExpenses.toLocaleString('en-IN');
   document.getElementById('d_profit').textContent      = '₹'+profit.toLocaleString('en-IN');
 
-  // Low Stock
   const lowStock = products.filter(p => p.qty <= p.low);
   const lsEl = document.getElementById('lowStockList');
   if (!lowStock.length) {
@@ -1879,7 +1848,6 @@ function loadDashboard() {
       </div>`).join('');
   }
 
-  // Recent Sales
   const rsEl = document.getElementById('recentSalesList');
   const recent = [...sales].slice(-5).reverse();
   if (!recent.length) {
@@ -1895,7 +1863,6 @@ function loadDashboard() {
       </div>`).join('');
   }
 
-  // Mini charts
   renderDashboardCharts();
 }
 
@@ -1913,7 +1880,6 @@ const chartDefaults = {
 };
 
 function renderDashboardCharts() {
-  // Sales last 7 days
   const days = [...Array(7)].map((_,i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6-i));
@@ -1937,7 +1903,6 @@ function renderDashboardCharts() {
     });
   }
 
-  // Expense by category
   const expCats = {};
   expenses.forEach(e => { expCats[e.cat] = (expCats[e.cat]||0) + e.amount; });
   destroyChart('expenseChart');
@@ -1967,7 +1932,6 @@ function renderReportCharts() {
   document.getElementById('r_profit').textContent   = '₹'+profit.toLocaleString('en-IN');
   document.getElementById('r_gst').textContent      = '₹'+totalGST.toLocaleString('en-IN');
 
-  // P&L chart
   destroyChart('plChart');
   const plc = document.getElementById('plChart');
   if (plc) {
@@ -1986,7 +1950,6 @@ function renderReportCharts() {
     });
   }
 
-  // Product sales
   const prodSales = {};
   sales.forEach(s => { prodSales[s.name] = (prodSales[s.name]||0) + (s.grand||0); });
   destroyChart('productSalesChart');
@@ -2000,13 +1963,10 @@ function renderReportCharts() {
           backgroundColor: 'rgba(167,139,250,0.7)', borderRadius: 6 }]
       },
       options: { ...chartDefaults, responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        indexAxis: 'y'
-      }
+        plugins: { legend: { display: false } }, indexAxis: 'y' }
     });
   }
 
-  // Top products table
   const tpEl = document.getElementById('topProductsTable');
   const sorted = Object.entries(prodSales).sort((a,b)=>b[1]-a[1]);
   if (!sorted.length) { tpEl.innerHTML = `<div class="empty-state"><div class="e-icon">📊</div><p>No sales data</p></div>`; }
@@ -2016,7 +1976,6 @@ function renderReportCharts() {
     </tbody></table>`;
   }
 
-  // Expense category chart
   const expCats = {};
   expenses.forEach(e => { expCats[e.cat] = (expCats[e.cat]||0) + e.amount; });
   destroyChart('expCatChart');
@@ -2034,7 +1993,6 @@ function renderReportCharts() {
     });
   }
 
-  // Stock value chart
   destroyChart('stockChart');
   const stc = document.getElementById('stockChart');
   if (stc && products.length) {
@@ -2108,7 +2066,7 @@ function exportSalesPDF() {
 }
 
 // ===== BULK IMPORT =====
-let importPreviews = {}; // type -> parsed rows
+let importPreviews = {};
 let importHistory  = [];
 
 const TEMPLATES = {
@@ -2139,7 +2097,6 @@ function downloadTemplate(type) {
   showToast(`⬇ template_${type}.csv downloaded`);
 }
 
-// Drag & drop helpers
 function dzOver(e, id) { e.preventDefault(); document.getElementById(id).classList.add('over'); }
 function dzLeave(id)   { document.getElementById(id).classList.remove('over'); }
 function dzDrop(e, type) {
@@ -2158,10 +2115,7 @@ function handleCSV(e, type) {
 function processCSVFile(file, type) {
   if (!file.name.endsWith('.csv')) { showToast('⚠️ Only .csv files are supported', 'error'); return; }
   const reader = new FileReader();
-  reader.onload = e => {
-    const text = e.target.result;
-    parseAndPreview(text, type);
-  };
+  reader.onload = e => parseAndPreview(e.target.result, type);
   reader.readAsText(file);
 }
 
@@ -2189,14 +2143,12 @@ function parseAndPreview(text, type) {
   const { headers, rows } = parseCSV(text);
   const required = TEMPLATES[type].headers;
 
-  // Validate headers
   const missing = required.filter(r => !headers.includes(r));
   if (missing.length) {
     showToast(`⚠️ Missing columns: ${missing.join(', ')}`, 'error');
     return;
   }
 
-  // Validate rows
   const validated = rows.map((row, i) => {
     const errors = [];
     if (type === 'products') {
@@ -2224,7 +2176,6 @@ function parseAndPreview(text, type) {
   const ok  = validated.filter(r => r._ok).length;
   const err = validated.filter(r => !r._ok).length;
 
-  // Build preview table
   const tbl = document.getElementById('preview_table_' + type);
   const dispHeaders = required;
   let html = `<thead><tr>${dispHeaders.map(h=>`<th>${h}</th>`).join('')}<th>Row</th><th>Status</th></tr></thead><tbody>`;
@@ -2238,7 +2189,6 @@ function parseAndPreview(text, type) {
   html += '</tbody>';
   tbl.innerHTML = html;
 
-  // Status summary
   document.getElementById('preview_status_' + type).innerHTML =
     `<span class="badge badge-green">✓ ${ok} valid rows</span>&nbsp;` +
     (err ? `<span class="badge badge-red">✕ ${err} rows with errors (will be skipped)</span>` : '');
@@ -2261,37 +2211,24 @@ function confirmImport(type) {
 
   if (type === 'products') {
     rows.forEach(r => {
-      products.push({
-        name: r.name,
-        cat: r.category || 'Other',
-        qty: Number(r.qty),
-        price: Number(r.price),
-        low: Number(r.low_stock) || 5,
-        added: new Date().toLocaleDateString()
-      });
+      products.push({ name: r.name, cat: r.category || 'Other', qty: Number(r.qty),
+        price: Number(r.price), low: Number(r.low_stock) || 5, added: new Date().toLocaleDateString() });
       imported++;
     });
   }
-
   if (type === 'customers') {
     rows.forEach(r => {
-      customers.push({
-        name: r.name,
-        phone: r.phone || '',
-        email: r.email || '',
-        type: r.type || 'Regular',
-        joined: new Date().toLocaleDateString()
-      });
+      customers.push({ name: r.name, phone: r.phone || '', email: r.email || '',
+        type: r.type || 'Regular', joined: new Date().toLocaleDateString() });
       imported++;
     });
   }
-
   if (type === 'sales') {
     rows.forEach(r => {
       const p = products.find(x => x.name.toLowerCase() === r.product_name.toLowerCase());
-      if (!p) return; // skip if product not found
+      if (!p) return;
       const qty = Number(r.qty);
-      if (p.qty < qty) return; // skip if insufficient stock
+      if (p.qty < qty) return;
       p.qty -= qty;
       const subtotal = +(qty * p.price).toFixed(2);
       const gst      = +(subtotal * 0.18).toFixed(2);
@@ -2300,23 +2237,16 @@ function confirmImport(type) {
       imported++;
     });
   }
-
   if (type === 'expenses') {
     rows.forEach(r => {
-      expenses.push({
-        desc: r.description,
-        cat: r.category || 'Other',
-        amount: Number(r.amount),
-        date: r.date || new Date().toLocaleDateString()
-      });
+      expenses.push({ desc: r.description, cat: r.category || 'Other',
+        amount: Number(r.amount), date: r.date || new Date().toLocaleDateString() });
       imported++;
     });
   }
 
-  // Log to history
   importHistory.unshift({ type, count: imported, total: rows.length + (importPreviews[type].filter(r=>!r._ok).length), time: new Date().toLocaleString() });
   renderImportHistory();
-
   save();
   clearImport(type);
   showToast(`✅ Imported ${imported} ${type} successfully!`);
@@ -2346,12 +2276,10 @@ function loadAll() {
   loadDashboard();
 }
 
-// Pre-populate expense date
 document.addEventListener('DOMContentLoaded', () => {
   const ed = document.getElementById('expDate');
   if (ed) ed.value = new Date().toISOString().split('T')[0];
 });
-
 </script>
 </body>
 </html>
