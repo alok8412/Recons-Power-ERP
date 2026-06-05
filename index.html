@@ -1664,7 +1664,58 @@ function printInvoiceModal() {
     <div class="invoice-container">
         <h2>🧾 TAX INVOICE</h2>
         <h3>RECONS ERP Pro</h3>
+        <body>
+    <div class="invoice-container">
+        <h2>🧾 TAX INVOICE</h2>
+        <h3>RECONS ERP Pro</h3>
         <p><strong>Powered by ALOK</strong></p>
+
+        <hr>
+
+        <p><strong>Customer Name:</strong> ${s.customer}</p>
+        <p><strong>Invoice Date:</strong> ${s.date}</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Product Description</th>
+                    <th>Quantity</th>
+                    <th>Unit Rate (₹)</th>
+                    <th>Amount (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>${s.name}</td>
+                    <td>${s.qty}</td>
+                    <td>${(s.subtotal / s.qty).toLocaleString('en-IN')}</td>
+                    <td>${s.subtotal.toLocaleString('en-IN')}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <p><strong>Subtotal:</strong> ₹${s.subtotal.toLocaleString('en-IN')}</p>
+            <p><strong>GST @ 18%:</strong> ₹${s.gst.toLocaleString('en-IN')}</p>
+            <p class="total">
+                <strong>Grand Total:</strong>
+                ₹${s.grand.toLocaleString('en-IN')}
+            </p>
+        </div>
+
+        <hr>
+
+        <p style="text-align:center;">
+            Thank you for your business.<br>
+            <strong>RECONS ERP Pro</strong><br>
+            Smart Business Management Solution
+        </p>
+    </div>
+
+    <script>
+        window.print();
+    </script>
+</body>
 
         <hr>
 
@@ -2038,7 +2089,7 @@ function exportSalesPDF() {
     tr:nth-child(even){background:#f8fafc}
     .total{font-size:18px;font-weight:bold;margin-top:20px;text-align:right;color:#0a6}
     </style></head><body>
-    <h1>📊 Sales Report —RECONS RECONS RECONS  ERP Pro Powered By ALOK Powered By ALOK Powered By ALOK Powered By ALOK Powered By ALOK</h1>
+    <h1>📊 Sales Report — RECONS  ERP Pro Powered By ALOK</h1>
     <p>Generated: ${new Date().toLocaleString()}</p>
     <table>
       <thead><tr><th>Product</th><th>Customer</th><th>Qty</th><th>Subtotal</th><th>GST</th><th>Grand Total</th><th>Date</th></tr></thead>
