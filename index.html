@@ -702,7 +702,7 @@ tbody tr:last-child td { border-bottom: none; }
 <!-- ===== LOGIN ===== -->
 <div id="loginPage">
   <div class="login-box">
-    <div class="login-logo">⬡RECONS RECONS RECONS  ERP Pro Powered By ALOK</div>
+    <div class="login-logo">⬡ RECONS  ERP Pro Powered By ALOK</div>
     <p>Sign in to your workspace</p>
 
     <label>Username</label>
@@ -732,7 +732,7 @@ tbody tr:last-child td { border-bottom: none; }
     <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
       <div class="sidebar-logo">
-        ⬡RECONS RECONS RECONS  ERP Pro Powered By ALOK
+        ⬡ RECONS  ERP Pro Powered By ALOK
         <span>Business Suite v2.0</span>
       </div>
 
@@ -1661,22 +1661,57 @@ function printInvoiceModal() {
     th{background:#f5f5f5}
     .total{font-size:20px;font-weight:bold;color:#0a6}</style>
     </head><body>
-    <h2>🧾 Tax Invoice —RECONS RECONS RECONS  ERP Pro Powered By ALOK Powered By ALOK Powered By ALOK Powered By ALOK Powered By ALOK</h2>
-    <p>Customer: <strong>${s.customer}</strong></p>
-    <p>Date: ${s.date}</p>
-    <table>
-      <thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
-      <tbody><tr>
-        <td>${s.name}</td><td>${s.qty}</td>
-        <td>₹${(s.subtotal/s.qty).toLocaleString('en-IN')}</td>
-        <td>₹${s.subtotal.toLocaleString('en-IN')}</td>
-      </tr></tbody>
-    </table>
-    <p>Subtotal: ₹${s.subtotal.toLocaleString('en-IN')}</p>
-    <p>GST (18%): ₹${s.gst.toLocaleString('en-IN')}</p>
-    <p class="total">Grand Total: ₹${s.grand.toLocaleString('en-IN')}</p>
-    <script>window.print();<\/script>
-    </body></html>
+    <div class="invoice-container">
+        <h2>🧾 TAX INVOICE</h2>
+        <h3>RECONS ERP Pro</h3>
+        <p><strong>Powered by ALOK</strong></p>
+
+        <hr>
+
+        <p><strong>Customer Name:</strong> ${s.customer}</p>
+        <p><strong>Invoice Date:</strong> ${s.date}</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Product Description</th>
+                    <th>Quantity</th>
+                    <th>Unit Rate (₹)</th>
+                    <th>Amount (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>${s.name}</td>
+                    <td>${s.qty}</td>
+                    <td>${(s.subtotal / s.qty).toLocaleString('en-IN')}</td>
+                    <td>${s.subtotal.toLocaleString('en-IN')}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <p><strong>Subtotal:</strong> ₹${s.subtotal.toLocaleString('en-IN')}</p>
+            <p><strong>GST @ 18%:</strong> ₹${s.gst.toLocaleString('en-IN')}</p>
+            <p class="total">
+                <strong>Grand Total:</strong>
+                ₹${s.grand.toLocaleString('en-IN')}
+            </p>
+        </div>
+
+        <hr>
+
+        <p style="text-align:center;">
+            Thank you for your business.<br>
+            <strong>RECONS ERP Pro</strong><br>
+            Smart Business Management Solution
+        </p>
+    </div>
+
+    <script>
+        window.print();
+    </script>
+</body></html>
   `);
   w.document.close();
 }
